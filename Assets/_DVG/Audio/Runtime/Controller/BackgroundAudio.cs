@@ -7,8 +7,8 @@ namespace DVG.Audio
     [Serializable]
     public sealed class BackgroundAudio : IAudioController
     {
-        [SerializeField] private AudioMixerGroup _backgroundMixerGroup;
         [SerializeField] private AudioEmitter _backgroundEmitter;
+        [SerializeField] private AudioMixerGroup _backgroundMixerGroup;
 
         public AudioEmitter Play(IAudioData audioData)
         {
