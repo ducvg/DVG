@@ -1,0 +1,16 @@
+{
+    "name": "DVG.Audio.Editor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:4d54e2f0fbffe1e41807cd2d4eb2fa73"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
