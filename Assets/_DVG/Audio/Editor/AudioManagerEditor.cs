@@ -3,10 +3,10 @@ using UnityEditor;
 using UnityEditorInternal;
 using UnityEngine;
 
-namespace DVG.Audio
+namespace DVG.Audio.Editor
 {
     [CustomEditor(typeof(AudioManager))]
-    public sealed class AudioManagerEditor : Editor
+    public sealed class AudioManagerEditor : UnityEditor.Editor
     {
         ReorderableList _list;
 
@@ -63,11 +63,6 @@ namespace DVG.Audio
 
             EditorGUILayout.Space();
 
-            if (GUILayout.Button("Fetch audio controllers"))
-            {
-                AudioManager.FetchControllers();
-            }
-
             serializedObject.ApplyModifiedProperties();
         }
 
@@ -76,7 +71,7 @@ namespace DVG.Audio
             if (prop.managedReferenceValue == null)
                 return "Null";
 
-            return prop.managedReferenceValue.GetType().Name;
+            return ObjectNames.NicifyVariableName(prop.managedReferenceValue.GetType().Name);
         }
 
         static readonly System.Collections.Generic.Dictionary<string, GUIContent> _labelCache = new();
