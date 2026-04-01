@@ -1,0 +1,9 @@
+{
+  "name": "com.DVG.Pool",
+  "version": "1.0.0",
+  "displayName": "DVG.Pool",
+  "description": "Object Pools.",
+  "author": {
+    "name": "ducvg"
+  }
+}
