@@ -1,5 +1,4 @@
 using System;
-using PrimeTween;
 
 namespace DVG.Timer  {
     public abstract class Timer : IDisposable {
