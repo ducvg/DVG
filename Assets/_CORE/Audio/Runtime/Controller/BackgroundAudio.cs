@@ -1,0 +1,38 @@
+using System;
+using UnityEngine;
+using UnityEngine.Audio;
+
+namespace DVG.Audio
+{
+    [Serializable]
+    public sealed class BackgroundAudio : IAudioController
+    {
+        [SerializeField] private AudioEmitter _backgroundEmitter;
+        [SerializeField] private AudioMixerGroup _backgroundMixerGroup;
+
+        public AudioEmitter Play(IAudioData audioData)
+        {
+            _backgroundEmitter
+                .WithAudioClip(audioData.AudioClip)
+                .WithLoop(true)
+                .Play();
+
+            return _backgroundEmitter;
+        }
+
+        public void Stop(IAudioData audioData)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void StopAll()
+        {
+            throw new NotImplementedException();
+        }
+        
+        public bool CanPlay(IAudioData audioData)
+        {
+            throw new NotImplementedException();
+        }
+    }
+}
