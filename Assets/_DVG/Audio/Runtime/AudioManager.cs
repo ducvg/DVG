@@ -29,18 +29,5 @@ namespace DVG.Audio
         {
             return (T)Instance._controllersDict[typeof(T)];
         }
-
-        #if UNITY_EDITOR
-        public static void FetchControllers()
-        {
-            var availableControllers = UnityEditor.TypeCache.GetTypesDerivedFrom<IAudioController>();
-
-            Instance._controllers = new IAudioController[availableControllers.Count];
-            for(int i = 0; i < availableControllers.Count; i++)
-            {
-                Instance._controllers[i] = (IAudioController)Activator.CreateInstance(availableControllers[i]);
-            }
-        }
-        #endif
     }
 }
