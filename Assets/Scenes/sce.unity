@@ -340,20 +340,18 @@ MonoBehaviour:
   <EmitterFactory>k__BackingField:
     _audioEmitterPrefab: {fileID: 0}
   _controllers:
-  - rid: 5348909288289468500
-  - rid: 5348909288289468501
+  - rid: 3572979617690026271
+  - rid: -2
   references:
     version: 2
     RefIds:
-    - rid: 5348909288289468500
-      type: {class: SfxAudio, ns: DVG.Audio, asm: Assembly-CSharp}
+    - rid: -2
+      type: {class: , ns: , asm: }
+    - rid: 3572979617690026271
+      type: {class: BackgroundAudio, ns: DVG.Audio, asm: DVG.Audio.Runtime}
       data:
-        _sfxMixerGroup: {fileID: 0}
-    - rid: 5348909288289468501
-      type: {class: BackgroundAudio, ns: DVG.Audio, asm: Assembly-CSharp}
-      data:
-        _backgroundEmitter: {fileID: 0}
         _backgroundMixerGroup: {fileID: 0}
+        _backgroundEmitter: {fileID: 0}
 --- !u!4 &1973972042
 Transform:
   m_ObjectHideFlags: 0
