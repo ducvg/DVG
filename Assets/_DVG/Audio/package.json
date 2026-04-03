@@ -5,7 +5,7 @@
   "description": "Audio system.",
   "dependencies": {
     "com.dvg.common": "https://github.com/ducvg/DVG.git?path=Assets/_DVG/Common",
-    "com.dvg.pool": "https://github.com/ducvg/DVG.git?path=Assets/_DVG/Common",
+    "com.dvg.pool": "https://github.com/ducvg/DVG.git?path=Assets/_DVG/Object Pool",
     "com.cysharp.unitask": "https://github.com/Cysharp/UniTask.git?path=src/UniTask/Assets/Plugins/UniTask"
   },
   "author": {

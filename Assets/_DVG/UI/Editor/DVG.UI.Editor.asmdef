@@ -1,0 +1,16 @@
+{
+    "name": "DVG.UI.Editor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:49db0b8cfe866c54195474d8f5bc80e9"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

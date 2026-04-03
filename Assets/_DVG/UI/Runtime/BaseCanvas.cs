@@ -1,16 +1,12 @@
-﻿using System;
-using System.Runtime.CompilerServices;
-using Cysharp.Threading.Tasks;
+﻿using Cysharp.Threading.Tasks;
 using DVG.UI;
 using UnityEngine;
 
 [RequireComponent(typeof(Canvas))]
 public abstract class BaseCanvas : MonoBehaviour
 {
-    [SerializeField] protected Canvas _canvas;
     [SerializeField] private TransitionData _transitionData;
-    [SerializeField] private float _inactiveTimeout = -1f; //destroy if not used frequently, never if <= 0
-    private float _unusedTimer = 0f;
+    [SerializeField] private ITimeout _timeout;
     private bool _isTransitioning = false;
 
     protected abstract void OnOpen();
@@ -22,7 +18,7 @@ public abstract class BaseCanvas : MonoBehaviour
         if (_isTransitioning) return;
         _isTransitioning = true;
     
-        _unusedTimer = 0f;
+        _timeout?.Stop();
         OnOpen();
 
         await _transitionData.Open(this);
@@ -36,7 +32,7 @@ public abstract class BaseCanvas : MonoBehaviour
         if (_isTransitioning) return;
         _isTransitioning = false;
 
-        _unusedTimer = 0f;
+        _timeout?.Stop();
         OnOpen();
 
         _transitionData.CompleteOpen(this);
@@ -48,6 +44,8 @@ public abstract class BaseCanvas : MonoBehaviour
         _isTransitioning = true;
     
         await _transitionData.Close(this);
+
+        _timeout?.Run();
         OnClose();
 
         _isTransitioning = false;
@@ -59,7 +57,8 @@ public abstract class BaseCanvas : MonoBehaviour
         _isTransitioning = false;
 
         _transitionData.CompleteClose(this);
+
+        _timeout?.Run();
         OnClose();
-        gameObject.SetActive(false);
     }
 }
