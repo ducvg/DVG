@@ -58,7 +58,6 @@ namespace DVG.UI.Editor
 
             int newIndex = EditorGUI.Popup(popupRect, currentIndex, _options);
 
-
             if (newIndex != currentIndex)
             {
                 property.managedReferenceValue = newIndex == 0
