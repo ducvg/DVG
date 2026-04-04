@@ -6,8 +6,10 @@ using System.Linq;
 using System;
 using System.Runtime.CompilerServices;
 
-namespace DVG.Timer {
-    internal static class TimerBootstrapper {
+namespace DVG.Common.Timer  
+{
+    internal static class TimerBootstrapper 
+    {
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         internal static void Initialize() 

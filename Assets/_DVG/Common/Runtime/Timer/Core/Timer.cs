@@ -1,6 +1,8 @@
 using System;
+using System.Runtime.CompilerServices;
 
-namespace DVG.Timer  {
+namespace DVG.Common.Timer  
+{
     public abstract class Timer : IDisposable {
         public float CurrentTime { get; protected set; }
         public bool IsRunning { get; private set; }
@@ -8,10 +10,6 @@ namespace DVG.Timer  {
         protected float _initialTime;
 
         private event Action OnStart, OnTimerStop = delegate { };
-
-        protected Timer(float value) {
-            _initialTime = value;
-        }
 
         public abstract void Tick();
         public abstract bool IsFinished { get; }
@@ -48,12 +46,14 @@ namespace DVG.Timer  {
             TimerSystem.DeregisterTimer(this);
         }
 
-        public virtual void Reset() => CurrentTime = _initialTime;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Reset() => CurrentTime = _initialTime;
 
-        public virtual void Reset(float newDuration)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void SetTime(float newTime)
         {
-            _initialTime = newDuration;
-            CurrentTime = _initialTime;
+            _initialTime = newTime;            
+            CurrentTime = CurrentTime;
         }
 
         public virtual void Dispose() {
