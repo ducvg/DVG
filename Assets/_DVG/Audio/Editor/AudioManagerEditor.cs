@@ -49,7 +49,7 @@ namespace DVG.Audio.Editor
         {
             serializedObject.Update();
 
-            DrawPropertiesExcluding(serializedObject, "_controllers");
+            DrawPropertiesExcluding(serializedObject, "_controllers", "m_Script");
 
             var prop = serializedObject.FindProperty("_controllers");
             

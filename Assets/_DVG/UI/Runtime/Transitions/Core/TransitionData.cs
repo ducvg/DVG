@@ -17,8 +17,10 @@ namespace DVG.UI
         public UniTask Open<T>(T owner) where T : BaseCanvas
         {
             int count = openTransitions.Length;
+            if (count == 0) return UniTask.CompletedTask;
+            
             var tasks = ArrayPool<UniTask>.Shared.Rent(count);
-            for (int i = 0; i < count; i++)
+            for (int i = 0; i < count; ++i)
             {
                 tasks[i] = openTransitions[i].Run(owner);
             }
@@ -36,8 +38,10 @@ namespace DVG.UI
         public UniTask Close<T>(T owner) where T : BaseCanvas
         {
             int count = closeTransitions.Length;
+            if (count == 0) return UniTask.CompletedTask;
+            
             var tasks = ArrayPool<UniTask>.Shared.Rent(count);
-            for (int i = 0; i < count; i++)
+            for (int i = 0; i < count; ++i)
             {
                 tasks[i] = closeTransitions[i].Run(owner);
             }
