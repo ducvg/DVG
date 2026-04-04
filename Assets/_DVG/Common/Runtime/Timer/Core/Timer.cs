@@ -5,27 +5,27 @@ namespace DVG.Timer  {
         public float CurrentTime { get; protected set; }
         public bool IsRunning { get; private set; }
 
-        protected float initialTime;
+        protected float _initialTime;
 
-        private event Action OnStart, OnTimerStop  = delegate { };
+        private event Action OnStart, OnTimerStop = delegate { };
 
         protected Timer(float value) {
-            initialTime = value;
+            _initialTime = value;
         }
 
         public abstract void Tick();
         public abstract bool IsFinished { get; }
 
-        public void Start() {
+        public virtual void Start() {
             if (IsRunning) return;
             IsRunning = true;
 
-            CurrentTime = initialTime;
+            CurrentTime = _initialTime;
             TimerSystem.RegisterTimer(this);
             OnStart.Invoke();
         }
 
-        public void Stop() {
+        public virtual void Stop() {
             if (!IsRunning) return;
             IsRunning = false;
 
@@ -48,10 +48,18 @@ namespace DVG.Timer  {
             TimerSystem.DeregisterTimer(this);
         }
 
-        public virtual void Reset() => CurrentTime = initialTime;
+        public virtual void Reset() => CurrentTime = _initialTime;
+
+        public virtual void Reset(float newDuration)
+        {
+            _initialTime = newDuration;
+            CurrentTime = _initialTime;
+        }
 
         public virtual void Dispose() {
             TimerSystem.DeregisterTimer(this);
+            OnStart = null;
+            OnTimerStop = null;
         }
     }
 }

@@ -22,7 +22,7 @@ public abstract class BaseCanvas : MonoBehaviour
         _timeoutStrategy?.Stop();
         OnOpen();
 
-        await _transitionData.Open(this);
+        await _transitionData.Open(destroyCancellationToken);
     
 
         _isTransitioning = false;
@@ -36,7 +36,7 @@ public abstract class BaseCanvas : MonoBehaviour
         _timeoutStrategy?.Stop();
         OnOpen();
 
-        _transitionData.CompleteOpen(this);
+        _transitionData.CompleteOpen();
     }
     
     public virtual async UniTask CloseAsync()
@@ -44,7 +44,7 @@ public abstract class BaseCanvas : MonoBehaviour
         if (_isTransitioning) return;
         _isTransitioning = true;
     
-        await _transitionData.Close(this);
+        await _transitionData.Close(destroyCancellationToken);
 
         _timeoutStrategy?.Run();
         OnClose();
@@ -57,7 +57,7 @@ public abstract class BaseCanvas : MonoBehaviour
         if (_isTransitioning) return;
         _isTransitioning = false;
 
-        _transitionData.CompleteClose(this);
+        _transitionData.CompleteClose();
 
         _timeoutStrategy?.Run();
         OnClose();

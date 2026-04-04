@@ -14,7 +14,7 @@ namespace DVG.UI
         [SerializeReference] private ITransition[] openTransitions;
         [SerializeReference] private ITransition[] closeTransitions;
 
-        public UniTask Open<T>(T owner) where T : BaseCanvas
+        public UniTask Open(CancellationToken ct)
         {
             int count = openTransitions.Length;
             if (count == 0) return UniTask.CompletedTask;
@@ -22,20 +22,20 @@ namespace DVG.UI
             var tasks = ArrayPool<UniTask>.Shared.Rent(count);
             for (int i = 0; i < count; ++i)
             {
-                tasks[i] = openTransitions[i].Run(owner);
+                tasks[i] = openTransitions[i].Run(ct);
             }
             return UniTask.WhenAll(tasks);
         }
 
-        public void CompleteOpen<T>(T owner) where T : BaseCanvas
+        public void CompleteOpen()
         {
             foreach (var transition in openTransitions)
             {
-                transition.Complete(owner);
+                transition.Complete();
             }
         }
 
-        public UniTask Close<T>(T owner) where T : BaseCanvas
+        public UniTask Close(CancellationToken ct)
         {
             int count = closeTransitions.Length;
             if (count == 0) return UniTask.CompletedTask;
@@ -43,16 +43,16 @@ namespace DVG.UI
             var tasks = ArrayPool<UniTask>.Shared.Rent(count);
             for (int i = 0; i < count; ++i)
             {
-                tasks[i] = closeTransitions[i].Run(owner);
+                tasks[i] = closeTransitions[i].Run(ct);
             }
             return UniTask.WhenAll(tasks);
         }
 
-        public void CompleteClose<T>(T owner) where T : BaseCanvas
+        public void CompleteClose()
         {
             foreach (var transition in closeTransitions)
             {
-                transition.Complete(owner);
+                transition.Complete();
             }
         }
     }

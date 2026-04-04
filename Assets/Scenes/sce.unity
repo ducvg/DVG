@@ -336,7 +336,7 @@ RectTransform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: -0.5864}
   m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
+  m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -359,21 +359,20 @@ MonoBehaviour:
   m_EditorClassIdentifier: DVG.UI.Runtime::DVG.UI.TestCanvase
   _transitionData:
     openTransitions:
-    - rid: 4587162607752577284
-    - rid: -2
-    closeTransitions: []
+    - rid: 4587162607752577305
+    - rid: 4587162607752577308
+    closeTransitions:
+    - rid: 4587162607752577307
   _timeoutStrategy:
     rid: 4587162607456878594
   references:
     version: 2
     RefIds:
-    - rid: -2
-      type: {class: , ns: , asm: }
     - rid: 4587162607456878594
       type: {class: InactiveTimeout, ns: DVG.UI, asm: DVG.UI.Runtime}
       data:
         _duration: 23
-    - rid: 4587162607752577284
+    - rid: 4587162607752577305
       type: {class: Fade, ns: DVG.UI, asm: DVG.UI.Runtime}
       data:
         _setting:
@@ -413,8 +412,92 @@ MonoBehaviour:
           skipValuesDuringDelay: 0
           immediateBind: 0
           schedulerType: 0
-          additionalSettings: 1
+          additionalSettings: 0
         _canvasGroup: {fileID: 0}
+    - rid: 4587162607752577307
+      type: {class: Fade, ns: DVG.UI, asm: DVG.UI.Runtime}
+      data:
+        _setting:
+          startValue: 0
+          endValue: 0
+          duration: 0
+          ease: 0
+          customEaseCurve:
+            serializedVersion: 2
+            m_Curve:
+            - serializedVersion: 3
+              time: 0
+              value: 0
+              inSlope: 0
+              outSlope: 0
+              tangentMode: 0
+              weightedMode: 0
+              inWeight: 0
+              outWeight: 0
+            - serializedVersion: 3
+              time: 1
+              value: 1
+              inSlope: 0
+              outSlope: 0
+              tangentMode: 0
+              weightedMode: 0
+              inWeight: 0
+              outWeight: 0
+            m_PreInfinity: 2
+            m_PostInfinity: 2
+            m_RotationOrder: 4
+          delay: 0
+          delayType: 0
+          loops: 1
+          loopType: 0
+          cancelOnError: 0
+          skipValuesDuringDelay: 0
+          immediateBind: 0
+          schedulerType: 0
+          additionalSettings: 0
+        _canvasGroup: {fileID: 0}
+    - rid: 4587162607752577308
+      type: {class: Move, ns: DVG.UI, asm: DVG.UI.Runtime}
+      data:
+        _setting:
+          startValue: {x: 0, y: 0, z: 0}
+          endValue: {x: 0, y: 0, z: 0}
+          duration: 0
+          ease: 0
+          customEaseCurve:
+            serializedVersion: 2
+            m_Curve:
+            - serializedVersion: 3
+              time: 0
+              value: 0
+              inSlope: 0
+              outSlope: 0
+              tangentMode: 0
+              weightedMode: 0
+              inWeight: 0
+              outWeight: 0
+            - serializedVersion: 3
+              time: 1
+              value: 1
+              inSlope: 0
+              outSlope: 0
+              tangentMode: 0
+              weightedMode: 0
+              inWeight: 0
+              outWeight: 0
+            m_PreInfinity: 2
+            m_PostInfinity: 2
+            m_RotationOrder: 4
+          delay: 0
+          delayType: 0
+          loops: 1
+          loopType: 0
+          cancelOnError: 0
+          skipValuesDuringDelay: 0
+          immediateBind: 0
+          schedulerType: 0
+          additionalSettings: 0
+        _target: {fileID: 0}
 --- !u!223 &1444519844
 Canvas:
   m_ObjectHideFlags: 0
