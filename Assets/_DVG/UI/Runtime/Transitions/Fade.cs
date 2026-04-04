@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using UnityEngine;
 using Cysharp.Threading.Tasks;
 using LitMotion;
@@ -15,13 +16,13 @@ namespace DVG.UI
         [SerializeField] private CanvasGroup _canvasGroup;
         private MotionHandle _handle;
 
-        public UniTask Run<T>(T owner) where T : BaseCanvas
+        public UniTask Run(CancellationToken ct)
         {
             _handle = LMotion.Create(_setting).BindToAlpha(_canvasGroup);
-            return _handle.ToUniTask(owner.destroyCancellationToken);
+            return _handle.ToUniTask(ct);
         }
 
-        public void Complete<T>(T owner) where T : BaseCanvas
+        public void Complete() 
         {
             _handle.Complete();
             // _canvasGroup.alpha = _setting.EndValue;

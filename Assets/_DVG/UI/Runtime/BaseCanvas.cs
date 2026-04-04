@@ -9,7 +9,6 @@ public abstract class BaseCanvas : MonoBehaviour
     [SerializeReference] private ITimeout _timeoutStrategy;
     private bool _isTransitioning = false;
 
-
     protected abstract void OnOpen();
     protected abstract void OnClose();
     public abstract bool IsOpen();
@@ -19,10 +18,10 @@ public abstract class BaseCanvas : MonoBehaviour
         if (_isTransitioning) return;
         _isTransitioning = true;
     
-        _timeoutStrategy?.Stop();
+        _timeoutStrategy?.Stop(this);
         OnOpen();
 
-        await _transitionData.Open(this);
+        await _transitionData.Open(destroyCancellationToken);
     
 
         _isTransitioning = false;
@@ -33,10 +32,10 @@ public abstract class BaseCanvas : MonoBehaviour
         if (_isTransitioning) return;
         _isTransitioning = false;
 
-        _timeoutStrategy?.Stop();
+        _timeoutStrategy?.Stop(this);
         OnOpen();
 
-        _transitionData.CompleteOpen(this);
+        _transitionData.CompleteOpen();
     }
     
     public virtual async UniTask CloseAsync()
@@ -44,9 +43,9 @@ public abstract class BaseCanvas : MonoBehaviour
         if (_isTransitioning) return;
         _isTransitioning = true;
     
-        await _transitionData.Close(this);
+        await _transitionData.Close(destroyCancellationToken);
 
-        _timeoutStrategy?.Run();
+        _timeoutStrategy?.Run(this);
         OnClose();
 
         _isTransitioning = false;
@@ -57,9 +56,9 @@ public abstract class BaseCanvas : MonoBehaviour
         if (_isTransitioning) return;
         _isTransitioning = false;
 
-        _transitionData.CompleteClose(this);
+        _transitionData.CompleteClose();
 
-        _timeoutStrategy?.Run();
+        _timeoutStrategy?.Run(this);
         OnClose();
     }
 }

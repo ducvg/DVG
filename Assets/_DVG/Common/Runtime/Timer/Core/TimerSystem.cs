@@ -1,8 +1,10 @@
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
-namespace DVG.Timer {
-    public static class TimerSystem {
+namespace DVG.Common.Timer
+{
+    public static class TimerSystem 
+    {
         private static HashSet<Timer> s_activeTimers = new(64);
         private static HashSet<Timer> s_timersToAdd = new(8);
         private static HashSet<Timer> s_timersToRemove = new(8);

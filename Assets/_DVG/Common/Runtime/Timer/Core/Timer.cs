@@ -1,36 +1,39 @@
 using System;
+using System.Runtime.CompilerServices;
 
-namespace DVG.Timer  {
+namespace DVG.Common.Timer  
+{
     public abstract class Timer : IDisposable {
         public float CurrentTime { get; protected set; }
         public bool IsRunning { get; private set; }
+        public event Action OnTimerStart, OnTimerFinish;
 
-        protected float initialTime;
+        protected float _initialTime;
 
-        private event Action OnStart, OnTimerStop  = delegate { };
-
-        protected Timer(float value) {
-            initialTime = value;
+        public Timer() { }
+        public Timer(float time)
+        {
+            _initialTime = time;
         }
 
         public abstract void Tick();
         public abstract bool IsFinished { get; }
 
-        public void Start() {
+        public virtual void Start() {
             if (IsRunning) return;
             IsRunning = true;
 
-            CurrentTime = initialTime;
+            CurrentTime = _initialTime;
             TimerSystem.RegisterTimer(this);
-            OnStart.Invoke();
+            OnTimerStart?.Invoke();
         }
 
-        public void Stop() {
+        public virtual void Stop() {
             if (!IsRunning) return;
             IsRunning = false;
 
             TimerSystem.DeregisterTimer(this);
-            OnTimerStop.Invoke();
+            OnTimerFinish?.Invoke();
         }
 
         public virtual void Resume()
@@ -48,10 +51,20 @@ namespace DVG.Timer  {
             TimerSystem.DeregisterTimer(this);
         }
 
-        public virtual void Reset() => CurrentTime = initialTime;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Reset() => CurrentTime = _initialTime;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void SetTime(float newTime)
+        {
+            _initialTime = newTime;            
+            CurrentTime = CurrentTime;
+        }
 
         public virtual void Dispose() {
             TimerSystem.DeregisterTimer(this);
+            OnTimerStart = null;
+            OnTimerFinish = null;
         }
     }
 }

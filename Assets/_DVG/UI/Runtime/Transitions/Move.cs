@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using Cysharp.Threading.Tasks;
 using LitMotion;
 using LitMotion.Extensions;
@@ -14,13 +15,13 @@ namespace DVG.UI
         [SerializeField] private Transform _target;
         private MotionHandle _handle;
 
-        public UniTask Run<T>(T owner) where T : BaseCanvas
+        public UniTask Run(CancellationToken ct)
         {
             _handle = LMotion.Create(_setting).BindToLocalPosition(_target);
-            return _handle.ToUniTask(owner.destroyCancellationToken);
+            return _handle.ToUniTask(ct);
         }
 
-        public void Complete<T>(T owner) where T : BaseCanvas
+        public void Complete()
         {
             _handle.Complete();
             // _target.localPosition = _setting.EndValue;
