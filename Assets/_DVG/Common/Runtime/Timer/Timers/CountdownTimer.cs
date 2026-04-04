@@ -6,6 +6,9 @@ namespace DVG.Common.Timer
     [Serializable]
     public sealed class CountdownTimer : Timer
     {
+        public CountdownTimer() { }
+        public CountdownTimer(float time) : base(time) { }
+
         public override void Tick()
         {
             if (IsRunning && CurrentTime > 0) {
@@ -17,6 +20,6 @@ namespace DVG.Common.Timer
             }
         }
 
-        public override bool IsFinished => CurrentTime > 0;
+        public override bool IsFinished => CurrentTime <= 0;
     }
 }

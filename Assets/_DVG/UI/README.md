@@ -12,7 +12,7 @@ Add UIManager on a gameObject, this is a DontDestroyOnLoad Singleton wrap around
 ### Transtion
 Canvas may or may not have open/close transition, to add transition: select the desired transitions on the canvas's obj inspector
 **4 Transition included: Move, Fade, Rotate, Scale.**
-<br>![img.png](../GitResource~/img.png) <br>
+<br>![img.png](../../../GitResource~/img.png) <br>
 Multiple transitions will run same time which can be combined for various design desires.<br>
 Creating custom transition:
 ```csharp
@@ -20,14 +20,16 @@ Creating custom transition:
 public sealed class ParticleTranstion : ITransition
 {
     ...
+
     public async UniTask Run(CancellationToken ct)
     {
-        while(_particle.IsRunning()) UniTask.Yield(ct)
+        _particle.Play();
+        while(_particle.IsRunning()) await UniTask.Yield(ct)
     }
     
     public void Complete()
     {
-        _particle.Complete();
+        _particle.Stop();
     }
 }
 ```
@@ -54,24 +56,29 @@ UIManager.UnloadCanvas<MinigameCanvas>(); //destroy the pooled canvas and releas
 
 ### Pool, Timeout
 All canvas are pooled by default, it can be manally .Destroy(canvas.gameobject) with timeoutStrategy as Null or be auto with a Timeout Strategy (only InactiveTimout is included atm)<br>
-Select a strategy to free up canvas that arent used frequently. The timer will tick (and free if finish) before script's Update() and reset count on open (before any transition).<br>
+Select a strategy to free up canvas that arent used frequently. The timer will tick (and destroy if finish) before script's Update() and reset time on open before any transition.<br>
 Creating custom Timeout Strategy:
 ```csharp
 [System.Serializable]
 public sealed class CustomTimeout : ITimeout
 {
     [SerializedField] private int _duration;
-    Timer timer = new CountdownTimer();
-    
-    public void Run() 
+    Timer timer = new CountdownTimer(); //or coroutine, async await
+
+    public CustomTimeout()
     {
+        timer.OnFinish += () => Debug.Log("Timeout");
+    }
+
+    public void Run(BaseCanvas owner) 
+    {
+        timer.SetTime(_duration);
         timer.Start();
     }
     
-    public void Stop()
+    public void Stop(BaseCanvas owner)
     {
         timer.Stop();
-        timer.Reset();
     }
 }
 ```
