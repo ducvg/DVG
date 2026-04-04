@@ -1,6 +1,6 @@
 {
     "name": "DVG.UI.Editor",
-    "rootNamespace": "",
+    "rootNamespace": "DVG.UI.Editor",
     "references": [
         "GUID:49db0b8cfe866c54195474d8f5bc80e9"
     ],

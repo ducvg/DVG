@@ -9,6 +9,7 @@ public abstract class BaseCanvas : MonoBehaviour
     [SerializeReference] private ITimeout _timeoutStrategy;
     private bool _isTransitioning = false;
 
+
     protected abstract void OnOpen();
     protected abstract void OnClose();
     public abstract bool IsOpen();
