@@ -1,0 +1,13 @@
+{
+  "name": "com.dvg.audio",
+  "version": "1.0.0",
+  "displayName": "DVG.Audio",
+  "description": "Audio system.",
+  "dependencies": {
+    "com.dvg.pool": "https://github.com/ducvg/DVG.git?path=Assets/DVG/Pool",
+    "com.cysharp.unitask": "https://github.com/Cysharp/UniTask.git?path=src/UniTask/Assets/Plugins/UniTask"
+  },
+  "author": {
+    "name": "ducvg"
+  }
+}
