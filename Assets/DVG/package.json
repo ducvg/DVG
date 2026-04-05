@@ -1,0 +1,13 @@
+{
+  "name": "com.dvg.all",
+  "version": "1.0.0",
+  "displayName": "DVG",
+  "description": "the things within the things.",
+  "dependencies": {
+    "com.cysharp.unitask": "https://github.com/Cysharp/UniTask.git?path=src/UniTask/Assets/Plugins/UniTask",
+    "com.annulusgames.lit-motion": "https://github.com/annulusgames/LitMotion.git?path=src/LitMotion/Assets/LitMotion"
+  },
+  "author": {
+    "name": "ducvg"
+  }
+}
