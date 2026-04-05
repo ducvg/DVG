@@ -1,6 +1,7 @@
 #if !ODIN_INSPECTOR
 using UnityEditor;
-using UnityEngine;
+using UnityEngine.UIElements;
+using UnityEditor.UIElements;
 using System;
 using System.Linq;
 using System.Collections.Generic;
@@ -8,16 +9,20 @@ using System.Collections.Generic;
 namespace DVG.Audio.Editor
 {
     [CustomPropertyDrawer(typeof(IAudioController), true)]
-    public class IAudioControllerDrawer : PropertyDrawer
+    public sealed class IAudioControllerDrawer : PropertyDrawer
     {
-        private static readonly Type[] _types;
-        private static readonly string[] _options;
-        private static readonly Dictionary<Type, int> _typeToIndex;
+        static readonly Type[] _types;
+        static readonly string[] _options;
+        static readonly Dictionary<Type, int> _typeToIndex;
 
         static IAudioControllerDrawer()
         {
             _types = AppDomain.CurrentDomain.GetAssemblies()
-                .SelectMany(a => a.GetTypes())
+                .SelectMany(a =>
+                {
+                    try { return a.GetTypes(); }
+                    catch { return Type.EmptyTypes; }
+                })
                 .Where(t =>
                     typeof(IAudioController).IsAssignableFrom(t) &&
                     !t.IsAbstract &&
@@ -37,85 +42,113 @@ namespace DVG.Audio.Editor
             }
         }
 
-        public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
+        public override VisualElement CreatePropertyGUI(SerializedProperty property)
         {
+            var root = new VisualElement();
+
+            var header = CreateHeader(property, root);
+            var content = CreateContent(property);
+
+            root.Add(header);
+            root.Add(content);
+
+            return root;
+        }
+        
+        private VisualElement CreateHeader(SerializedProperty property, VisualElement root)
+        {
+            var header = new VisualElement();
+            header.style.flexDirection = FlexDirection.Row;
+
+            // Foldout
+            var foldout = new Foldout
+            {
+                text = property.displayName,
+                value = property.isExpanded
+            };
+            foldout.style.flexGrow = 1;
+
+            header.Add(foldout);
+
+            // Popup
+            var popup = CreateTypePopup(property, root);
+            header.Add(popup);
+
+            // Foldout behavior
+            foldout.RegisterValueChangedCallback(evt =>
+            {
+                property.isExpanded = evt.newValue;
+                
+                var content = root.Q<VisualElement>("content");
+                content.style.display = evt.newValue ? DisplayStyle.Flex : DisplayStyle.None;
+            });
+
+            return header;
+        }
+        
+        VisualElement CreateTypePopup(SerializedProperty property, VisualElement root)
+        {
+            var popup = new PopupField<string>(_options.ToList(), 0);
+            popup.style.flexGrow = 5;
+
             Type currentType = GetCurrentType(property);
 
             int currentIndex = 0;
             if (currentType != null && _typeToIndex.TryGetValue(currentType, out int idx))
                 currentIndex = idx;
 
-            var popupRect = new Rect(position.x, position.y, position.width, EditorGUIUtility.singleLineHeight);
+            popup.index = currentIndex;
 
-            int newIndex = EditorGUI.Popup(popupRect, label.text, currentIndex, _options);
-
-            if (newIndex != currentIndex)
+            popup.RegisterValueChangedCallback(_ =>
             {
+                int newIndex = popup.index;
+                if (newIndex == currentIndex) return;
+
+                property.serializedObject.Update();
+
                 property.managedReferenceValue = newIndex == 0
                     ? null
                     : Activator.CreateInstance(_types[newIndex - 1]);
 
                 property.serializedObject.ApplyModifiedProperties();
-            }
 
-            if (property.managedReferenceValue == null)
-                return;
+                root.Clear();
+                root.Add(CreatePropertyGUI(property));
+            });
 
-            float y = popupRect.y + EditorGUIUtility.singleLineHeight + 2;
-
-            var iterator = property.Copy();
-            var end = iterator.GetEndProperty();
-
-            EditorGUI.indentLevel++;
-
-            if (iterator.NextVisible(true))
-            {
-                while (!SerializedProperty.EqualContents(iterator, end))
-                {
-                    float h = EditorGUI.GetPropertyHeight(iterator, true);
-
-                    EditorGUI.PropertyField(
-                        new Rect(position.x, y, position.width, h),
-                        iterator,
-                        true);
-
-                    y += h + 2;
-
-                    if (!iterator.NextVisible(false))
-                        break;
-                }
-            }
-
-            EditorGUI.indentLevel--;
+            return popup;
         }
-
-        public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
+        
+        VisualElement CreateContent(SerializedProperty property)
         {
-            float height = EditorGUIUtility.singleLineHeight;
+            var content = new VisualElement();
+            content.name = "content";
+            content.style.marginLeft = 16;
+            content.style.display = property.isExpanded ? DisplayStyle.Flex : DisplayStyle.None;
 
             if (property.managedReferenceValue == null)
-                return height;
+                return content;
 
             var iterator = property.Copy();
             var end = iterator.GetEndProperty();
-
-            height += 2;
 
             if (iterator.NextVisible(true))
             {
                 while (!SerializedProperty.EqualContents(iterator, end))
                 {
-                    height += EditorGUI.GetPropertyHeight(iterator, true) + 2;
+                    var field = new PropertyField(iterator.Copy());
+                    field.Bind(property.serializedObject);
+                    content.Add(field);
 
                     if (!iterator.NextVisible(false))
                         break;
                 }
             }
 
-            return height;
+            return content;
         }
-
-        private static Type GetCurrentType(SerializedProperty property)
+        
+        static Type GetCurrentType(SerializedProperty property)
         {
             if (string.IsNullOrEmpty(property.managedReferenceFullTypename))
                 return null;

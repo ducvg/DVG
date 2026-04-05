@@ -12,7 +12,7 @@ Add UIManager on a gameObject, this is a DontDestroyOnLoad Singleton wrap around
 ### Transtion
 Canvas may or may not have open/close transition, to add transition: select the desired transitions on the canvas's obj inspector
 **4 Transition included: Move, Fade, Rotate, Scale.**
-<br>![img.png](../../../GitResource~/img.png) <br>
+<br>![img.png](../../../../GitResource~/img.png) <br>
 Multiple transitions will run same time which can be combined for various design desires.<br>
 Creating custom transition:
 ```csharp
