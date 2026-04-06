@@ -13,7 +13,7 @@ namespace DVG.UI
         public InactiveTimeout()
         {
             _timer = new CountdownTimer();
-            _timer.OnTimerFinish += OnTimeout;
+            _timer.OnTimerStop += OnTimeout;
         }
 
         public void Run(BaseCanvas owner)

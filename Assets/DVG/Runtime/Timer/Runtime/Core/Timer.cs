@@ -6,7 +6,7 @@ namespace DVG.Timer
     public abstract class Timer : IDisposable {
         public float CurrentTime { get; protected set; }
         public bool IsRunning { get; private set; }
-        public event Action OnTimerStart, OnTimerFinish;
+        public event Action OnTimerStart, OnTimerStop;
 
         protected float _duration;
 
@@ -24,7 +24,7 @@ namespace DVG.Timer
             IsRunning = true;
 
             CurrentTime = _duration;
-            TimerSystem.RegisterTimer(this);
+            TimerRunner.RegisterTimer(this);
             OnTimerStart?.Invoke();
         }
 
@@ -32,8 +32,8 @@ namespace DVG.Timer
             if (!IsRunning) return;
             IsRunning = false;
 
-            TimerSystem.DeregisterTimer(this);
-            OnTimerFinish?.Invoke();
+            TimerRunner.DeregisterTimer(this);
+            OnTimerStop?.Invoke();
         }
 
         public virtual void Resume()
@@ -41,14 +41,14 @@ namespace DVG.Timer
             if (IsRunning) return;
             IsRunning = true;
 
-            TimerSystem.RegisterTimer(this);
+            TimerRunner.RegisterTimer(this);
         }
 
         public virtual void Pause()
         {
             if (!IsRunning) return;
             IsRunning = false;
-            TimerSystem.DeregisterTimer(this);
+            TimerRunner.DeregisterTimer(this);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -62,9 +62,9 @@ namespace DVG.Timer
         }
 
         public virtual void Dispose() {
-            TimerSystem.DeregisterTimer(this);
+            TimerRunner.DeregisterTimer(this);
             OnTimerStart = null;
-            OnTimerFinish = null;
+            OnTimerStop = null;
         }
     }
 }

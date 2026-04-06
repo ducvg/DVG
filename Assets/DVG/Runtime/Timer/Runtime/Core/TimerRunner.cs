@@ -3,11 +3,11 @@ using System.Runtime.CompilerServices;
 
 namespace DVG.Timer
 {
-    public static class TimerSystem 
+    public static class TimerRunner 
     {
-        private static HashSet<Timer> s_activeTimers = new(64);
-        private static HashSet<Timer> s_timersToAdd = new(8);
-        private static HashSet<Timer> s_timersToRemove = new(8);
+        private static readonly HashSet<Timer> s_activeTimers = new(64);
+        private static readonly HashSet<Timer> s_timersToAdd = new(8);
+        private static readonly HashSet<Timer> s_timersToRemove = new(8);
 
         public static void UpdateTimers() {
             foreach(var timer in s_timersToAdd) s_activeTimers.Add(timer);
@@ -20,9 +20,9 @@ namespace DVG.Timer
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void RegisterTimer(Timer timer) => s_activeTimers.Add(timer);
+        public static void RegisterTimer(Timer timer) => s_timersToAdd.Add(timer);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void DeregisterTimer(Timer timer) => s_activeTimers.Remove(timer);
+        public static void DeregisterTimer(Timer timer) => s_timersToRemove.Add(timer);
     }
 }
