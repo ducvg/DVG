@@ -1,27 +1,26 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.LowLevel;
 using UnityEngine.PlayerLoop;
-using System.Collections.Generic;
-using System.Linq;
-using System;
 
-namespace DVG.Timer  
+namespace DVG.StateMachine
 {
-    internal static class TimerBootstrapper 
+    public static class RunnerBootstrapper
     {
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         internal static void Initialize() 
         {
             PlayerLoopSystem currentPlayerLoop = PlayerLoop.GetCurrentPlayerLoop();
 
-            PlayerLoopSystem timerSystem = new()
+            PlayerLoopSystem stateUpdateLoop = new()
             {
-                type = typeof(TimerRunner),
-                updateDelegate = TimerRunner.UpdateTimers,
-                subSystemList = null,
+                type = typeof(StateMachineRunner),
+                updateDelegate = StateMachineRunner.EarlyUpdate            
             };
 
-            InsertSystemIn<Update>(ref currentPlayerLoop, timerSystem, insertIndex: 0);
+            InsertSystemIn<Update>(ref currentPlayerLoop, stateUpdateLoop, insertIndex: 0);
             PlayerLoop.SetPlayerLoop(currentPlayerLoop);
         }
 

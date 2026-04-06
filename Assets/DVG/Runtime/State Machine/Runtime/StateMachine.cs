@@ -2,12 +2,17 @@ using UnityEngine;
 
 namespace DVG.StateMachine
 {
-    public abstract class StateMachine<TOwner> where TOwner : UnityEngine.Object
+    public abstract class StateMachine<TOwner> : IStateMachine 
+        where TOwner : UnityEngine.Object
     {
         [SerializeField] protected TOwner Owner;
         
         protected IState<TOwner> _currentState;
         protected IState<TOwner> _previousState;
+
+        public StateMachine() {
+            StateMachineRunner.Register(this);
+        }
 
         public void ChangeState<TState>(TState state) where TState : IState<TOwner>
         {
@@ -23,9 +28,32 @@ namespace DVG.StateMachine
             _previousState = _currentState = null;
         }
 
-        public void Update(float deltaTime)
+        public void EarlyUpdate()
         {
-            _currentState?.OnUpdate(Owner, deltaTime);
+            _currentState?.OnEarlyUpdate(Owner);
         }
+
+        public void Update()
+        {
+            _currentState?.OnUpdate(Owner);
+        }
+
+        public void LateUpdate()
+        {
+            _currentState?.OnLateUpdate(Owner);
+        }
+
+        public void FixedUpdate()
+        {
+            _currentState?.OnFixedUpdate(Owner);
+        }
+    }
+
+    public interface IStateMachine
+    {
+        void EarlyUpdate();
+        void Update();
+        void LateUpdate();
+        void FixedUpdate();
     }
 }
