@@ -16,8 +16,8 @@ namespace DVG.StateMachine
 
             PlayerLoopSystem stateUpdateLoop = new()
             {
-                type = typeof(StateMachineRunner),
-                updateDelegate = StateMachineRunner.EarlyUpdate            
+                type = typeof(StateRunner),
+                updateDelegate = StateRunner.EarlyUpdate            
             };
 
             InsertSystemIn<Update>(ref currentPlayerLoop, stateUpdateLoop, insertIndex: 0);

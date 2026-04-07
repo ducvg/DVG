@@ -2,9 +2,9 @@ using UnityEngine;
 
 namespace DVG.StateMachine
 {
-    public interface IState<TOwner>
+    public abstract class State<TStateMachine> where TStateMachine : IStateMachine
     {
-        public void OnEnter(TOwner owner);
-        public void OnExit(TOwner owner);
+        public abstract void OnEnter(TStateMachine owner);
+        public abstract void OnExit(TStateMachine owner);
     }
 }
