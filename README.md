@@ -24,7 +24,7 @@ Add UIManager on a gameObject, this is a DontDestroyOnLoad Singleton wrap around
 Canvas may or may not have open/close transition, to add transition: select the desired transitions on the canvas's obj inspector<br>
 **4 transitions included: Move, Fade, Rotate, Scale.**<br>
 Open/close can have multiple transitions that will be combined to create a more complex transitions.
-<br>![img.png](../GitResource~/img.png) <br>
+<br>![img.png](GitResource~/img.png) <br>
 ```csharp
 ///Create custom transition:
 [System.Serializable] //must be serializable
