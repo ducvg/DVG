@@ -1,0 +1,9 @@
+{
+  "name": "com.dvg.statemachine",
+  "version": "1.0.0",
+  "displayName": "DVG.StateMachine",
+  "description": "State Machine.",
+  "author": {
+    "name": "ducvg"
+  }
+}

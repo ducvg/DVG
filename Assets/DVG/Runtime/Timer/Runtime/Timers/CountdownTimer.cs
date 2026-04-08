@@ -1,9 +1,7 @@
-using System;
 using UnityEngine;
 
 namespace DVG.Timer
 {
-    [Serializable]
     public sealed class CountdownTimer : Timer
     {
         public CountdownTimer() { }

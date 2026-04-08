@@ -10,18 +10,30 @@ namespace DVG.StateMachine
     public static class RunnerBootstrapper
     {
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
-        internal static void Initialize() 
+        private static void Initialize() 
         {
             PlayerLoopSystem currentPlayerLoop = PlayerLoop.GetCurrentPlayerLoop();
 
-            PlayerLoopSystem stateUpdateLoop = new()
+            var earlyUpdateLoop = CreateStateRunnerLoop(StateRunner.EarlyUpdate);
+            var updateLoop = CreateStateRunnerLoop(StateRunner.Update);
+            var preLateUpdateLoop = CreateStateRunnerLoop(StateRunner.PreLateUpdate);
+            var fixedUpdate = CreateStateRunnerLoop(StateRunner.FixedUpdate);
+
+            InsertSystemIn<EarlyUpdate>(ref currentPlayerLoop, earlyUpdateLoop, insertIndex: 0);
+            InsertSystemIn<Update>(ref currentPlayerLoop, updateLoop, insertIndex: 0);
+            InsertSystemIn<PostLateUpdate>(ref currentPlayerLoop, preLateUpdateLoop, insertIndex: 0);
+            InsertSystemIn<FixedUpdate>(ref currentPlayerLoop, fixedUpdate, insertIndex: 0);
+            
+            PlayerLoop.SetPlayerLoop(currentPlayerLoop);
+        }
+
+        private static PlayerLoopSystem CreateStateRunnerLoop(PlayerLoopSystem.UpdateFunction updateDelegate)
+        {
+            return new PlayerLoopSystem
             {
                 type = typeof(StateRunner),
-                updateDelegate = StateRunner.EarlyUpdate            
+                updateDelegate = updateDelegate
             };
-
-            InsertSystemIn<Update>(ref currentPlayerLoop, stateUpdateLoop, insertIndex: 0);
-            PlayerLoop.SetPlayerLoop(currentPlayerLoop);
         }
 
         private static void InsertSystemIn<TLoop>(ref PlayerLoopSystem rootSystem, in PlayerLoopSystem newSystem, int insertIndex)

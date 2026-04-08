@@ -12,7 +12,7 @@ namespace DVG.UI
 
         public InactiveTimeout()
         {
-            _timer = new CountdownTimer();
+            _timer = new CountdownTimer(_durationSecs);
             _timer.OnTimerStop += OnTimeout;
         }
 

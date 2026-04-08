@@ -5,13 +5,10 @@ using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Audio;
 
-#pragma warning disable CS0649 // unassigned field warning
-#pragma warning disable IDE0044 // readonly field suggest
-
 namespace DVG.Audio
 {
     [Serializable]
-    public sealed class SfxAudio : IAudioController
+    public sealed class SfxController : IAudioController
     {
         [SerializeField] private AudioMixerGroup _sfxMixerGroup;
         private readonly Dictionary<IAudioData, LinkedList<AudioEmitter>> _activeEmittersDict = new(256); //rarely traverse, avoid mem frag 

@@ -4,53 +4,73 @@ namespace DVG.StateMachine
 {
     public static class StateRunner
     {
-        private static readonly HashSet<IStateMachine> _stateMachinesToAdd = new(64);
-        private static readonly HashSet<IStateMachine> _stateMachinesToRemove = new(64);
+        private const int _initModifySize = 64;
+        private static readonly HashSet<object> _addStates = new(_initModifySize);
+        private static readonly HashSet<object> _removeStates = new(_initModifySize);
 
-        private static readonly HashSet<IStateMachine> _activeStateMachines = new(256);
+        private const int _initActiveSize = 256;
+        private static readonly HashSet<IEarlyUpdate> _earlyUpdateStates = new(_initActiveSize);
+        private static readonly HashSet<IUpdate> _updateStates = new(_initActiveSize);
+        private static readonly HashSet<ILateUpdate> _lateUpdateStates = new(_initActiveSize);
+        private static readonly HashSet<IFixedUpdate> _fixedUpdateStates = new(_initActiveSize);
 
-        public static void EarlyUpdate() 
+        public static void EarlyUpdate()
         {
-            ApplyPendingChanges();
-            foreach(var stateMachine in _activeStateMachines) stateMachine.EarlyUpdate();
+            HandleRegister();
+            HandleDeregister();
+            foreach(var stateMachine in _earlyUpdateStates) stateMachine.EarlyUpdate();
         }
 
         public static void Update() 
         {
-            foreach(var stateMachine in _activeStateMachines) stateMachine.Update();
+            foreach(var stateMachine in _updateStates) stateMachine.Update();
         }
 
-        public static void LateUpdate() 
+        public static void PreLateUpdate() 
         {
-            foreach(var stateMachine in _activeStateMachines) stateMachine.LateUpdate();
+            foreach(var stateMachine in _lateUpdateStates) stateMachine.LateUpdate();
         }
 
         public static void FixedUpdate() 
         {
-            foreach(var stateMachine in _activeStateMachines) stateMachine.FixedUpdate();
+            foreach(var stateMachine in _fixedUpdateStates) stateMachine.FixedUpdate();
         }
 
-        public static void Register<TStateMachine>(TStateMachine stateMachine)
-            where TStateMachine : IStateMachine
+        public static void Register(object state)
         {
-            _stateMachinesToRemove.Remove(stateMachine);
-            _stateMachinesToAdd.Add(stateMachine);
+            _removeStates.Remove(state);
+            _addStates.Add(state);
         }
 
-        public static void Deregister<TStateMachine>(TStateMachine stateMachine)
-            where TStateMachine : IStateMachine
+        public static void Deregister(object state)
         {
-            _stateMachinesToAdd.Remove(stateMachine);
-            _stateMachinesToRemove.Add(stateMachine);
+            _addStates.Remove(state);
+            _removeStates.Add(state);
         }
 
-        private static void ApplyPendingChanges()
+        //500 cigarettes
+        private static void HandleRegister()
         {
-            foreach(var stateMachine in _stateMachinesToAdd) _activeStateMachines.Add(stateMachine);
-            _stateMachinesToAdd.Clear();
+            foreach (object state in _addStates)
+            {
+                if(state is IEarlyUpdate eu) _earlyUpdateStates.Add(eu);
+                if(state is IUpdate u) _updateStates.Add(u);
+                if(state is ILateUpdate lu) _lateUpdateStates.Add(lu);
+                if(state is IFixedUpdate fu) _fixedUpdateStates.Add(fu);
+            }
+            _addStates.Clear();
+        }
 
-            foreach(var stateMachine in _stateMachinesToRemove) _activeStateMachines.Remove(stateMachine);
-            _stateMachinesToRemove.Clear();
+        private static void HandleDeregister()
+        {
+            foreach (object state in _removeStates)
+            {
+                if(state is IEarlyUpdate eu) _earlyUpdateStates.Remove(eu);
+                if(state is IUpdate u) _updateStates.Remove(u);
+                if(state is ILateUpdate lu) _lateUpdateStates.Remove(lu);
+                if(state is IFixedUpdate fu) _fixedUpdateStates.Remove(fu);
+            }
+            _removeStates.Clear();
         }
     }
 }

@@ -5,7 +5,7 @@ using UnityEngine.Audio;
 namespace DVG.Audio
 {
     [Serializable]
-    public sealed class BackgroundAudio : IAudioController
+    public sealed class BackgroundController : IAudioController
     {
         [SerializeField] private AudioMixerGroup _backgroundMixerGroup;
         [SerializeField] private AudioEmitter _backgroundEmitter;

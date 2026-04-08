@@ -1,8 +1,8 @@
 {
-  "name": "com.dvg.common",
+  "name": "com.dvg.timer",
   "version": "1.0.0",
-  "displayName": "DVG.Common",
-  "description": "Commonly used stuff.",
+  "displayName": "DVG.Timer",
+  "description": "unity timer as c# class.",
   "author": {
     "name": "ducvg"
   }
