@@ -1,6 +1,6 @@
 # About
-Some template systems that in my opinion, has no voodoo magic, makes it easy to read and extend<br>
-This aims for minimal overhead of monobehaviours or unity objects and no enum switches.
+Some template systems that in my opinion, has no voodoo magic makes it easy to read and extend<br>
+These aim for minimal overhead of monobehaviours or unity objects and no enum switches. Everything should be clear and easily read even by a beginner.
 
 # Install
 Add Git package URL: https://github.com/ducvg/DVG.git?path=Assets/DVG<br>
