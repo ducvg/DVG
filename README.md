@@ -113,20 +113,25 @@ public sealed class Player : MonoBehaviour
     [field: SerializeField] public PlayerMovementStateMachine MovementStateMachine  { get; private set; }
     //public PlayerAttackStateMachine AttackStateMachine  { get; private set; }
 
-    [ContextMenu("Switch to Idle State")]
-    private void SwitchToIdle()
+    private void Awake()
     {
-        MovementStateMachine.ChangeState(MovementStateMachine.IdleState);
+        MovementStateMachine.SetOwner(this); //call once
     }
 
-    [ContextMenu("Switch to Walk State")]
-    private void SwitchToWalk()
+    private void Update()
     {
-        MovementStateMachine.ChangeState(MovementStateMachine.WalkState);
+        if(Input.GetKeyDown(KeyCode.Q))
+        {
+            MovementStateMachine.ChangeState(MovementStateMachine.IdleState);
+        }
+        if(Input.GetKeyDown(KeyCode.W))
+        {
+            MovementStateMachine.ChangeState(MovementStateMachine.WalkState);
+        }
     }
 }
 ```
-The state machine, must implement StateMachine<Owner> with owner is who using the state machine:
+The state machine, must implement StateMachine<Owner> with owner is who using the state machine. This serve 2 purposes: cache the states and serialize the states on inspector.
 ```csharp
 [Serializable]
 public sealed class PlayerMovementStateMachine : StateMachine<Player>
@@ -136,7 +141,7 @@ public sealed class PlayerMovementStateMachine : StateMachine<Player>
 }
 ```
 The state, must implement IState<Owner> with owner is who using the state machine.<br>
-To have update within unity internal loop, implement the suitable interfaces or none if not needed.
+To have updates within unity internal loops, implement the corresponding interfaces or none if not needed.
 ```csharp
 [Serializable]
 public sealed class PlayerIdleState : IState<Player>, IEarlyUpdate, IUpdate, ILateUpdate, IFixedUpdate
@@ -152,7 +157,7 @@ public sealed class PlayerIdleState : IState<Player>, IEarlyUpdate, IUpdate, ILa
     public void LateUpdate() => Debug.Log($"{GetType().Name} LateUpdate");
 }
 
-//serializable optional, no serialize fields inside
+//serializable optional, only need update and fixedupdate
 public sealed class PlayerWalkState : IState<Player>, IUpdate, IFixedUpdate
 {
     public void OnEnter(Player owner) => Debug.Log($"{GetType().Name} OnEnter");

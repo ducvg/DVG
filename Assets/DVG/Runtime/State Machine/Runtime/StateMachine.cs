@@ -1,20 +1,20 @@
-using System;
 using UnityEngine;
 
 namespace DVG.StateMachine
 {
-    public interface IState<TOwner> where TOwner : MonoBehaviour
-    {
-        public void OnEnter(TOwner owner);
-        public void OnExit(TOwner owner);
-    }
-    
     public abstract class StateMachine<TOwner> where TOwner : MonoBehaviour
     {
-        [SerializeField] protected TOwner Owner;
+        protected TOwner Owner;
         
         protected IState<TOwner> _currentState;
         protected IState<TOwner> _previousState;
+
+        public void SetOwner(TOwner owner)
+        {
+            if(Owner == owner) return;
+            Owner = owner;
+            Owner.destroyCancellationToken.Register(OnDestroy);
+        }
 
         public void ChangeState<TState>(TState newState) where TState : IState<TOwner>
         {
@@ -34,6 +34,11 @@ namespace DVG.StateMachine
             _currentState?.OnExit(Owner);
             
             _previousState = _currentState = null;
+        }
+
+        private void OnDestroy()
+        {
+            if(_currentState != null) StateRunner.Deregister(_currentState);
         }
     }
 }
