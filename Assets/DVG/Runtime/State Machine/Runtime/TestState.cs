@@ -8,17 +8,23 @@ namespace DVG.StateMachine
         [field: SerializeField] public PlayerMovementStateMachine MovementStateMachine  { get; private set; }
         // [field: SerializeField] public PlayerAttackStateMachine AttackStateMachine  { get; private set; }
 
-        [ContextMenu("Switch to Idle State")]
-        private void SwitchToIdle()
+        private void Awake()
         {
-            MovementStateMachine.ChangeState(MovementStateMachine.IdleState);
+            MovementStateMachine.SetOwner(this); //call once
         }
 
-        [ContextMenu("Switch to Walk State")]
-        private void SwitchToWalk()
+        private void Update()
         {
-            MovementStateMachine.ChangeState(MovementStateMachine.WalkState);
+            if(Input.GetKeyDown(KeyCode.Q))
+            {
+                MovementStateMachine.ChangeState(MovementStateMachine.IdleState);
+            }
+            if(Input.GetKeyDown(KeyCode.W))
+            {
+                MovementStateMachine.ChangeState(MovementStateMachine.WalkState);
+            }
         }
+
     }
 
     [Serializable]
