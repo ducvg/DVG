@@ -14,15 +14,15 @@ namespace DVG.StateMachine
         {
             PlayerLoopSystem currentPlayerLoop = PlayerLoop.GetCurrentPlayerLoop();
 
-            var earlyUpdateLoop = CreateStateRunnerLoop(StateRunner.EarlyUpdate);
-            var updateLoop = CreateStateRunnerLoop(StateRunner.Update);
-            var preLateUpdateLoop = CreateStateRunnerLoop(StateRunner.PreLateUpdate);
-            var fixedUpdate = CreateStateRunnerLoop(StateRunner.FixedUpdate);
+            PlayerLoopSystem earlyUpdateLoop = CreateStateRunnerLoop(StateRunner.EarlyUpdate);
+            PlayerLoopSystem updateLoop = CreateStateRunnerLoop(StateRunner.Update);
+            PlayerLoopSystem preLateUpdateLoop = CreateStateRunnerLoop(StateRunner.PreLateUpdate);
+            PlayerLoopSystem fixedUpdate = CreateStateRunnerLoop(StateRunner.FixedUpdate);
 
-            InsertSystemIn<EarlyUpdate>(ref currentPlayerLoop, earlyUpdateLoop, insertIndex: 0);
-            InsertSystemIn<Update>(ref currentPlayerLoop, updateLoop, insertIndex: 0);
-            InsertSystemIn<PostLateUpdate>(ref currentPlayerLoop, preLateUpdateLoop, insertIndex: 0);
-            InsertSystemIn<FixedUpdate>(ref currentPlayerLoop, fixedUpdate, insertIndex: 0);
+            currentPlayerLoop.InsertSystemAt<EarlyUpdate>(earlyUpdateLoop, insertIndex: 0);
+            currentPlayerLoop.InsertSystemAt<Update>(updateLoop, insertIndex: 0);
+            currentPlayerLoop.InsertSystemAt<PreLateUpdate>(preLateUpdateLoop, insertIndex: 0); //lateupdate() is inside PreLateUpdate, this run before it
+            currentPlayerLoop.InsertSystemAt<FixedUpdate>(fixedUpdate, insertIndex: 0);
             
             PlayerLoop.SetPlayerLoop(currentPlayerLoop);
         }
@@ -36,14 +36,14 @@ namespace DVG.StateMachine
             };
         }
 
-        private static void InsertSystemIn<TLoop>(ref PlayerLoopSystem rootSystem, in PlayerLoopSystem newSystem, int insertIndex)
+        private static void InsertSystemAt<TLoop>(this ref PlayerLoopSystem rootSystem, in PlayerLoopSystem newSystem, int insertIndex)
         {
             PlayerLoopSystem[] rootSubSystems = rootSystem.subSystemList;
 
             if (rootSubSystems != null)
             {
                 int subSystemCount = rootSubSystems.Length;
-                List<PlayerLoopSystem> newSubSystemList = new(subSystemCount);
+                List<PlayerLoopSystem> newSubSystemList = new(subSystemCount + 4);
 
                 Span<PlayerLoopSystem> allSubSystemsSpan = rootSubSystems.AsSpan();
                 
