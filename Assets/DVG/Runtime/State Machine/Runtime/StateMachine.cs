@@ -1,37 +1,47 @@
+using System.Threading;
+using Codice.Client.BaseCommands;
 using UnityEngine;
 
 namespace DVG.StateMachine
 {
+    //TOwner is the MonoBehaviour that owns the state machine
     public abstract class StateMachine<TOwner> where TOwner : MonoBehaviour
     {
-        protected TOwner Owner;
-        
-        protected IState<TOwner> _currentState;
-        protected IState<TOwner> _previousState;
+        protected TOwner _owner;
+
+        protected IState<TOwner> _previousState, _currentState;
+
+        private CancellationTokenRegistration _destroyctRegistration;
 
         public void SetOwner(TOwner owner)
         {
-            if(Owner == owner) return;
-            Owner = owner;
-            Owner.destroyCancellationToken.Register(OnDestroy);
+            if(_owner == owner) return;
+            if(_owner != null) _destroyctRegistration.Dispose();
+            
+            _owner = owner;
+            _destroyctRegistration = _owner.destroyCancellationToken.Register(OnDestroy);
         }
 
         public void ChangeState<TState>(TState newState) where TState : IState<TOwner>
         {
             StateRunner.Deregister(_currentState);
-            _currentState?.OnExit(Owner);
+            _currentState?.OnExit(_owner);
             
             _previousState = _currentState;
             _currentState = newState;
             
-            _currentState?.OnEnter(Owner);
+            _currentState?.OnEnter(_owner);
             StateRunner.Register(_currentState);
+
+            #if UNITY_EDITOR
+            AddToHistory(_currentState);
+            #endif
         }
 
         public void ClearState()
         {
             StateRunner.Deregister(_currentState);
-            _currentState?.OnExit(Owner);
+            _currentState?.OnExit(_owner);
             
             _previousState = _currentState = null;
         }
@@ -40,5 +50,20 @@ namespace DVG.StateMachine
         {
             if(_currentState != null) StateRunner.Deregister(_currentState);
         }
+
+#region Debug
+        #if UNITY_EDITOR
+        [SerializeField] private string[] _statesHistory = new string[_historySize];
+        private int _historyIndex = 0;
+        private const int _historySize = 16;
+
+        private void AddToHistory(IState<TOwner> state)
+        {
+            _statesHistory[_historyIndex] = state.GetType().Name;
+            _historyIndex = (_historyIndex + 1) % _historySize;
+        }
+
+        #endif
+#endregion
     }
 }
