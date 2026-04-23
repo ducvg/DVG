@@ -127,73 +127,10 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 483870108}
-  - component: {fileID: 483870107}
-  m_Layer: 0
-  m_Name: audio
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &483870107
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 483870106}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cb8d4f330f90c2241b76059d2a96799b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: DVG.Audio.Runtime::DVG.Audio.AudioManager
-  <EmitterFactory>k__BackingField:
-    _audioEmitterPrefab: {fileID: 0}
-    _defaultCapacity: 64
-    _maxSize: 512
-  _controllers:
-  - rid: 3572979865554780163
-  - rid: 3572979865554780164
-  references:
-    version: 2
-    RefIds:
-    - rid: 3572979865554780163
-      type: {class: SfxController, ns: DVG.Audio, asm: DVG.Audio.Runtime}
-      data:
-        _sfxMixerGroup: {fileID: 0}
-    - rid: 3572979865554780164
-      type: {class: BackgroundController, ns: DVG.Audio, asm: DVG.Audio.Runtime}
-      data:
-        _backgroundMixerGroup: {fileID: 0}
-        _backgroundEmitter: {fileID: 0}
---- !u!4 &483870108
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 483870106}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1, z: -10}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1592766995
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
   - component: {fileID: 1592766997}
   - component: {fileID: 1592766998}
   m_Layer: 0
-  m_Name: state
+  m_Name: audio
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -223,54 +160,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 1592766995}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3a3985519015d12489426c0ae2e2cd43, type: 3}
+  m_Script: {fileID: 11500000, guid: d40fad91d0279b24f8924d1c640e8732, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: DVG.StateMachine.Runtime::DVG.StateMachine.Test.Player
-  <MovementStateMachine>k__BackingField:
-    _previousState:
-      rid: -2
-    _currentState:
-      rid: -2
-    _statesHistory:
-    - rid: -2
-    - rid: -2
-    - rid: -2
-    - rid: -2
-    - rid: -2
-    - rid: -2
-    - rid: -2
-    - rid: -2
-    - rid: -2
-    - rid: -2
-    - rid: -2
-    - rid: -2
-    - rid: -2
-    - rid: -2
-    - rid: -2
-    - rid: -2
-    - rid: -2
-    - rid: -2
-    - rid: -2
-    - rid: -2
-    - rid: -2
-    - rid: -2
-    - rid: -2
-    - rid: -2
-    - rid: -2
-    - rid: -2
-    - rid: -2
-    - rid: -2
-    - rid: -2
-    - rid: -2
-    - rid: -2
-    - rid: -2
-    <IdleState>k__BackingField:
-      _name: 
-  references:
-    version: 2
-    RefIds:
-    - rid: -2
-      type: {class: , ns: , asm: }
+  m_EditorClassIdentifier: StateMachine.Sample::Player
+  _movementStateMachine:
+    Owner: {fileID: 1592766998}
+    <RunState>k__BackingField:
+      <SmokeParticle>k__BackingField: {fileID: 0}
 --- !u!1 &1973972040
 GameObject:
   m_ObjectHideFlags: 0
@@ -288,7 +184,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1973972042
 RectTransform:
   m_ObjectHideFlags: 0
@@ -308,6 +204,29 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1973972043
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1973972040}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cb8d4f330f90c2241b76059d2a96799b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: DVG.Audio.Runtime::DVG.Audio.AudioManager
+  <EmitterFactory>k__BackingField:
+    _audioEmitterPrefab: {fileID: 0}
+    _defaultCapacity: 64
+    _maxSize: 512
+  _controllers:
+  - rid: -2
+  references:
+    version: 2
+    RefIds:
+    - rid: -2
+      type: {class: , ns: , asm: }
 --- !u!223 &1973972044
 Canvas:
   m_ObjectHideFlags: 0
