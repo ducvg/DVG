@@ -46,7 +46,7 @@ public sealed class ParticleTranstion : ITransition
 }
 ```
 
-### Usage
+### Open/Close UI
 ```csharp
 UIManager.Open<InventoryCanvas>();
 await UIManager.OpenAsync<InventoryCanvas>(); //wait all transition complete
