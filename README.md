@@ -1,12 +1,12 @@
 # About
-Some template systems that in my opinion, has no voodoo magic makes it easy to read and extend. Everything should be clear and easily read even by a beginner.<br>
-These aim for minimal overhead of monobehaviours or unity objects and no enum switches.
+Some systems that i aim for the least abstraction and voodoo magic, each system should be understood just by reading methods' name.<br>
+These also aim for minimal uses of monobehaviours/components and no enum switches.
 
 # Install
 Add Git package URL: https://github.com/ducvg/DVG.git?path=Assets/DVG<br>
 Note: This will auto install all [included packages](#Included) below, individual package links on it's section.<br>
 Dependency: UniTask, LitMotion<br>
-Works with odin inspector<br>
+Odin inspector will override custom editor<br>
 
 # Included
 - [UI](#UI)
@@ -70,7 +70,7 @@ UIManager.UnloadCanvas<MinigameCanvas>(); //destroy the pooled canvas and releas
 public sealed class
 ```
 ### Pool, Timeout
-All canvas are pooled by default, it can be manally .Destroy(canvas.gameobject) with timeoutStrategy as Null or be auto with a Timeout Strategy (only InactiveTimout is included atm)<br>
+All canvas are pooled by default, it can be manually cleaned by Destroy(canvas.gameobject) with timeoutStrategy set as Null or be auto with a Timeout Strategy (only InactiveTimout is included atm)<br>
 Select a strategy to free up canvas that arent used frequently. The timer will tick (and destroy if finish) before script's Update() and reset time on open before any transition.<br>
 Creating custom Timeout Strategy:
 ```csharp
@@ -137,18 +137,15 @@ The state machine, must implement StateMachine<Owner> with owner is who using th
 [Serializable]
 public sealed class PlayerMovementStateMachine : StateMachine<Player>
 {
-    [field: SerializeField] public PlayerIdleState IdleState { get; private set; }
-    /*no serialize data*/ public PlayerWalkState WalkState { get; private set; } = new();
+    public readonly PlayerIdleState IdleState = new();
+    [field: SerializeField] public readonly PlayerWalkState WalkState { get; private set; }
 }
 ```
 The state, must implement IState<Owner> with owner is who using the state machine.<br>
 To have updates within unity internal loops, implement the corresponding interfaces or none if not needed.
 ```csharp
-[Serializable]
 public sealed class PlayerIdleState : IState<Player>, IEarlyUpdate, IUpdate, ILateUpdate, IFixedUpdate
 {
-    [SerializeField] private string _name;
-
     public void OnEnter(Player owner) => Debug.Log($"{GetType().Name} OnEnter");
     public void OnExit(Player owner) => Debug.Log($"{GetType().Name} OnExit");
     
@@ -158,12 +155,22 @@ public sealed class PlayerIdleState : IState<Player>, IEarlyUpdate, IUpdate, ILa
     public void LateUpdate() => Debug.Log($"{GetType().Name} LateUpdate");
 }
 
-//serializable optional, only need update and fixedupdate
+[System.Serializable]
 public sealed class PlayerWalkState : IState<Player>, IUpdate, IFixedUpdate
 {
-    public void OnEnter(Player owner) => Debug.Log($"{GetType().Name} OnEnter");
-    public void OnExit(Player owner) => Debug.Log($"{GetType().Name} OnExit");
-    
+    [SerializeField] private ParticleSystem _trailParticle;
+    public void OnEnter(Player owner)
+    {
+        if(_trailParticle != null) _trailParticle.Play();
+        Debug.Log($"{GetType().Name} OnEnter");
+    }
+
+    public void OnExit(Player owner)
+    {
+        if(_trailParticle != null) _trailParticle.Stop();
+        Debug.Log($"{GetType().Name} OnExit");
+    }
+
     public void FixedUpdate() => Debug.Log($"{GetType().Name} FixedUpdate");
     public void Update() => Debug.Log($"{GetType().Name} Update");
 }
