@@ -128,7 +128,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1592766997}
-  - component: {fileID: 1592766996}
+  - component: {fileID: 1592766998}
   m_Layer: 0
   m_Name: state
   m_TagString: Untagged
@@ -136,22 +136,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1592766996
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1592766995}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f1e6a151d082ca44783367012fe981b1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: DVG.StateMachine.Runtime::DVG.StateMachine.Player
-  <MovementStateMachine>k__BackingField:
-    Owner: {fileID: 1592766996}
-    <IdleState>k__BackingField:
-      _name: 500 cigarettes
 --- !u!4 &1592766997
 Transform:
   m_ObjectHideFlags: 0
@@ -167,6 +151,22 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1592766998
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1592766995}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d40fad91d0279b24f8924d1c640e8732, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: StateMachine.Sample::Player
+  _movementStateMachine:
+    Owner: {fileID: 1592766998}
+    <RunState>k__BackingField:
+      <SmokeParticle>k__BackingField: {fileID: 0}
 --- !u!1 &1973972040
 GameObject:
   m_ObjectHideFlags: 0
@@ -185,7 +185,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1973972042
 RectTransform:
   m_ObjectHideFlags: 0
@@ -222,14 +222,12 @@ MonoBehaviour:
     _defaultCapacity: 64
     _maxSize: 512
   _controllers:
-  - rid: 3572979706088915287
+  - rid: -2
   references:
     version: 2
     RefIds:
-    - rid: 3572979706088915287
-      type: {class: SfxAudio, ns: DVG.Audio, asm: DVG.Audio.Runtime}
-      data:
-        _sfxMixerGroup: {fileID: 0}
+    - rid: -2
+      type: {class: , ns: , asm: }
 --- !u!223 &1973972044
 Canvas:
   m_ObjectHideFlags: 0

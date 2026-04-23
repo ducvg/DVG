@@ -7,7 +7,7 @@ using UnityEngine.PlayerLoop;
 
 namespace DVG.StateMachine
 {
-    public static class RunnerBootstrapper
+    internal static class RunnerBootstrapper
     {
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void Initialize() 

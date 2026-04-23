@@ -18,6 +18,12 @@ namespace DVG.StateMachine
 
         public void ChangeState<TState>(TState newState) where TState : IState<TOwner>
         {
+            if(newState == null)
+            {
+                ClearState();
+                return;
+            }
+            
             StateRunner.Deregister(_currentState);
             _currentState?.OnExit(Owner);
             

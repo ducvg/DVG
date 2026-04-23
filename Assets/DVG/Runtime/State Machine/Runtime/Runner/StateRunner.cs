@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace DVG.StateMachine
 {
-    public static class StateRunner
+    internal static class StateRunner
     {
         private const int _initModifySize = 64;
         private static readonly HashSet<object> _addStates = new(_initModifySize);
@@ -18,22 +18,28 @@ namespace DVG.StateMachine
         {
             HandleRegister();
             HandleDeregister();
-            foreach(var stateMachine in _earlyUpdateStates) stateMachine.EarlyUpdate();
+            foreach(var state in _earlyUpdateStates) state.EarlyUpdate();
         }
 
         public static void Update() 
         {
-            foreach(var stateMachine in _updateStates) stateMachine.Update();
+            HandleRegister();
+            HandleDeregister();
+            foreach(var state in _updateStates) state.Update();
         }
 
         public static void PreLateUpdate() 
         {
-            foreach(var stateMachine in _lateUpdateStates) stateMachine.LateUpdate();
+            HandleRegister();
+            HandleDeregister();
+            foreach(var state in _lateUpdateStates) state.LateUpdate();
         }
 
         public static void FixedUpdate() 
         {
-            foreach(var stateMachine in _fixedUpdateStates) stateMachine.FixedUpdate();
+            HandleRegister();
+            HandleDeregister();
+            foreach(var state in _fixedUpdateStates) state.FixedUpdate();
         }
 
         public static void Register(object state)
