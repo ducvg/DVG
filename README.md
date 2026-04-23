@@ -25,8 +25,9 @@ Canvas may or may not have open/close transition, to add transition: select the 
 **4 transitions included: Move, Fade, Rotate, Scale.**<br>
 Open/close can have multiple transitions that will be combined to create a more complex transitions.
 <br>![img.png](GitResource~/img.png) <br>
+
+Create custom transition:
 ```csharp
-///Create custom transition:
 [System.Serializable] //must be serializable
 public sealed class ParticleTranstion : ITransition
 {
