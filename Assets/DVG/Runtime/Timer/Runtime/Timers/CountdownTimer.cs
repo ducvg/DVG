@@ -4,17 +4,16 @@ namespace DVG.Timer
 {
     public sealed class CountdownTimer : Timer
     {
-        public CountdownTimer() { }
-        public CountdownTimer(float time) : base(time) { }
-
-        public override void Tick()
+        public override void Tick(float deltaDelayTime)
         {
-            if (IsRunning && CurrentTime > 0) {
-                CurrentTime -= Time.deltaTime;
+            if (IsRunning && CurrentTime > 0) 
+            {
+                CurrentTime -= deltaDelayTime;
             }
 
-            if (IsRunning && CurrentTime <= 0) {
-                Stop();
+            if (IsRunning && CurrentTime <= 0) 
+            {
+                Finish();
             }
         }
 

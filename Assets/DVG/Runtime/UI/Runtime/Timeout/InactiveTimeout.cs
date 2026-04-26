@@ -12,8 +12,8 @@ namespace DVG.UI
 
         public InactiveTimeout()
         {
-            _timer = new CountdownTimer(_durationSecs);
-            _timer.OnTimerStop += OnTimeout;
+            _timer = new CountdownTimer();
+            _timer.OnStart(OnTimeout);
         }
 
         public void Run(BaseCanvas owner)
@@ -30,6 +30,7 @@ namespace DVG.UI
 
         private void OnTimeout()
         {
+            _timer.OnFinish(OnTimeout);
             Object.Destroy(_owner.gameObject);
         }
     }    
