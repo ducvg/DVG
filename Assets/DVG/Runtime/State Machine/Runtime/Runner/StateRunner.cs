@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace DVG.StateMachine
 {
-    internal static class StateRunner
+    public static class StateRunner
     {
         private const int _initModifySize = 64;
         private static readonly HashSet<object> _addStates = new(_initModifySize);

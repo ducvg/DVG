@@ -43,7 +43,7 @@ public abstract class ScriptableSingleton<T> : ScriptableObject where T : Script
 {
     public static T Instance {get; private set;}
 
-    protected  void Awake()
+    protected void Awake()
     {
         if(Instance != null && Instance != this) return;
         Instance = this as T;
