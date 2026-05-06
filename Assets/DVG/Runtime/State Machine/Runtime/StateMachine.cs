@@ -24,19 +24,19 @@ namespace DVG.StateMachine
                 return;
             }
             
-            StateRunner.Deregister(_currentState);
+            StateManager.Deregister(_currentState);
             _currentState?.OnExit(Owner);
             
             _previousState = _currentState;
             _currentState = newState;
             
             _currentState?.OnEnter(Owner);
-            StateRunner.Register(_currentState);
+            StateManager.Register(_currentState);
         }
 
         public void ClearState()
         {
-            StateRunner.Deregister(_currentState);
+            StateManager.Deregister(_currentState);
             _currentState?.OnExit(Owner);
             
             _previousState = _currentState = null;
@@ -44,7 +44,7 @@ namespace DVG.StateMachine
 
         private void OnDestroy()
         {
-            if(_currentState != null) StateRunner.Deregister(_currentState);
+            if(_currentState != null) StateManager.Deregister(_currentState);
         }
     }
 }

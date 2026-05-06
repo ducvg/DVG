@@ -1,82 +1,122 @@
-using System.Collections.Generic;
+using System;
 
 namespace DVG.StateMachine
 {
-    public static class StateRunner
+    internal interface IStateRunner
     {
-        private const int _initModifySize = 64;
-        private static readonly HashSet<object> _addStates = new(_initModifySize);
-        private static readonly HashSet<object> _removeStates = new(_initModifySize);
+        public void Run();
+    }
+    
+    internal abstract class StateRunner<TUpdate> : IStateRunner
+    {
+        private const int _initActiveSize = 128;
+        
+        public readonly UpdateType StateRunnerUpdateType;
+        protected readonly TUpdate[] _states;
+        protected int _tailIndex;
 
-        private const int _initActiveSize = 256;
-        private static readonly HashSet<IEarlyUpdate> _earlyUpdateStates = new(_initActiveSize);
-        private static readonly HashSet<IUpdate> _updateStates = new(_initActiveSize);
-        private static readonly HashSet<ILateUpdate> _lateUpdateStates = new(_initActiveSize);
-        private static readonly HashSet<IFixedUpdate> _fixedUpdateStates = new(_initActiveSize);
-
-        public static void EarlyUpdate()
+        protected bool _isRunning;
+        
+        public StateRunner(UpdateType updateType)
         {
-            HandleRegister();
-            HandleDeregister();
-            foreach(var state in _earlyUpdateStates) state.EarlyUpdate();
+            StateRunnerUpdateType  = updateType;
+            _states = new TUpdate[_initActiveSize];
+            _tailIndex = 0;
+            _isRunning = false;
         }
+        
+        public abstract void Run();
+        public abstract void Register<TState>(TState state);
+        public abstract void Unregister<TState>(TState state);
+    }
+    
+    internal sealed class StateRunnerEarlyUpdate : StateRunner<IEarlyUpdate>
+    {
+        public StateRunnerEarlyUpdate() : base(UpdateType.EarlyUpdate){}
 
-        public static void Update() 
+        public override void Run()
         {
-            HandleRegister();
-            HandleDeregister();
-            foreach(var state in _updateStates) state.Update();
-        }
-
-        public static void PreLateUpdate() 
-        {
-            HandleRegister();
-            HandleDeregister();
-            foreach(var state in _lateUpdateStates) state.LateUpdate();
-        }
-
-        public static void FixedUpdate() 
-        {
-            HandleRegister();
-            HandleDeregister();
-            foreach(var state in _fixedUpdateStates) state.FixedUpdate();
-        }
-
-        public static void Register(object state)
-        {
-            _removeStates.Remove(state);
-            _addStates.Add(state);
-        }
-
-        public static void Deregister(object state)
-        {
-            _addStates.Remove(state);
-            _removeStates.Add(state);
-        }
-
-        //500 cigarettes
-        private static void HandleRegister()
-        {
-            foreach (object state in _addStates)
+            _isRunning = true;
+            Span<IEarlyUpdate> stateSpan = _states.AsSpan(0, _tailIndex);
+            for (int i = 0; i < stateSpan.Length; ++i)
             {
-                if(state is IEarlyUpdate eu) _earlyUpdateStates.Add(eu);
-                if(state is IUpdate u) _updateStates.Add(u);
-                if(state is ILateUpdate lu) _lateUpdateStates.Add(lu);
-                if(state is IFixedUpdate fu) _fixedUpdateStates.Add(fu);
+                stateSpan[i].EarlyUpdate();
             }
-            _addStates.Clear();
+            _isRunning = false;
         }
 
-        private static void HandleDeregister()
+        public override void Register<TState>(TState state)
         {
-            foreach (object state in _removeStates)
+            if (state is not IEarlyUpdate) return;
+        }
+
+        public override void Unregister<TState>(TState state)
+        {
+            throw new NotImplementedException();
+        }
+    }
+    
+    internal sealed class StateRunnerFixedUpdate : StateRunner<IFixedUpdate>
+    {
+        public StateRunnerFixedUpdate() : base(UpdateType.FixedUpdate){}
+        
+        public override void Run()
+        {
+            _isRunning = true;
+            Span<IFixedUpdate> stateSpan = _states.AsSpan(0, _tailIndex);
+            for (int i = 0; i < stateSpan.Length; ++i)
             {
-                if(state is IEarlyUpdate eu) _earlyUpdateStates.Remove(eu);
-                if(state is IUpdate u) _updateStates.Remove(u);
-                if(state is ILateUpdate lu) _lateUpdateStates.Remove(lu);
-                if(state is IFixedUpdate fu) _fixedUpdateStates.Remove(fu);
+                stateSpan[i].FixedUpdate();
             }
-            _removeStates.Clear();
+            _isRunning = false;
+        }
+    }
+    
+    internal sealed class StateRunnerUpdate : StateRunner<IUpdate>
+    {
+        public StateRunnerUpdate() : base(UpdateType.Update){}
+        
+        public override void Run()
+        {
+            _isRunning = true;
+            Span<IUpdate> stateSpan = _states.AsSpan(0, _tailIndex);
+            for (int i = 0; i < stateSpan.Length; ++i)
+            {
+                stateSpan[i].Update();
+            }
+            _isRunning = false;
+        }
+    }
+    
+    internal sealed class StateRunnerPreLateUpdate : StateRunner<ILateUpdate>
+    {
+        public StateRunnerPreLateUpdate() : base(UpdateType.LateUpdate){}
+        
+        public override void Run()
+        {
+            _isRunning = true;
+            Span<ILateUpdate> stateSpan = _states.AsSpan(0, _tailIndex);
+            for (int i = 0; i < stateSpan.Length; ++i)
+            {
+                stateSpan[i].LateUpdate();
+            }
+            _isRunning = false;
+        }
+    }
+    
+    internal sealed class StateRunnerPostLateUpdate : StateRunner<IPostLateUpdate>
+    {
+        public StateRunnerPostLateUpdate() : base(UpdateType.PostLateUpdate){}
+        
+        public override void Run()
+        {
+            _isRunning = true;
+            Span<IPostLateUpdate> stateSpan = _states.AsSpan(0, _tailIndex);
+            for (int i = 0; i < stateSpan.Length; ++i)
+            {
+                stateSpan[i].PostLateUpdate();
+            }
+            _isRunning = false;
         }
     }
 }

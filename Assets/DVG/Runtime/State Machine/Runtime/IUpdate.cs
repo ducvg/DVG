@@ -5,6 +5,11 @@
         public void EarlyUpdate();
     }
     
+    public interface IFixedUpdate
+    {
+        public void FixedUpdate();
+    }
+    
     public interface IUpdate
     {
         public void Update();
@@ -14,9 +19,9 @@
     {
         public void LateUpdate();
     }
-    
-    public interface IFixedUpdate
+
+    public interface IPostLateUpdate
     {
-        public void FixedUpdate();
+        public void PostLateUpdate();
     }
 }

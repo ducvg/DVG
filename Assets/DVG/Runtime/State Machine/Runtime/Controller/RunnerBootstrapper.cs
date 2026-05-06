@@ -14,25 +14,28 @@ namespace DVG.StateMachine
         {
             PlayerLoopSystem currentPlayerLoop = PlayerLoop.GetCurrentPlayerLoop();
 
-            PlayerLoopSystem earlyUpdateLoop = CreateStateRunnerLoop(StateRunner.EarlyUpdate);
-            PlayerLoopSystem updateLoop = CreateStateRunnerLoop(StateRunner.Update);
-            PlayerLoopSystem preLateUpdateLoop = CreateStateRunnerLoop(StateRunner.PreLateUpdate);
-            PlayerLoopSystem fixedUpdate = CreateStateRunnerLoop(StateRunner.FixedUpdate);
+            PlayerLoopSystem earlyUpdateLoop = CreateStateRunnerLoop(new StateRunnerEarlyUpdate(), UpdateType.EarlyUpdate);
+            PlayerLoopSystem fixedUpdate = CreateStateRunnerLoop(new StateRunnerEarlyUpdate(), UpdateType.FixedUpdate);
+            PlayerLoopSystem updateLoop = CreateStateRunnerLoop(new StateRunnerEarlyUpdate(), UpdateType.Update);
+            PlayerLoopSystem preLateUpdateLoop = CreateStateRunnerLoop(new StateRunnerEarlyUpdate(), UpdateType.LateUpdate);
+            PlayerLoopSystem postLateUpdateLoop = CreateStateRunnerLoop(new StateRunnerEarlyUpdate(), UpdateType.PostLateUpdate);
 
             currentPlayerLoop.InsertSystemAt<EarlyUpdate>(earlyUpdateLoop, insertIndex: 0);
-            currentPlayerLoop.InsertSystemAt<Update>(updateLoop, insertIndex: 0);
-            currentPlayerLoop.InsertSystemAt<PreLateUpdate>(preLateUpdateLoop, insertIndex: 0); //lateupdate() is inside PreLateUpdate, this run before it
             currentPlayerLoop.InsertSystemAt<FixedUpdate>(fixedUpdate, insertIndex: 0);
+            currentPlayerLoop.InsertSystemAt<Update>(updateLoop, insertIndex: 0);
+            currentPlayerLoop.InsertSystemAt<PreLateUpdate>(preLateUpdateLoop, insertIndex: 0); //monobehaviour lateupdate() is inside PreLateUpdate
+            currentPlayerLoop.InsertSystemAt<PostLateUpdate>(postLateUpdateLoop, insertIndex: 0);
             
             PlayerLoop.SetPlayerLoop(currentPlayerLoop);
         }
 
-        private static PlayerLoopSystem CreateStateRunnerLoop(PlayerLoopSystem.UpdateFunction updateDelegate)
+        private static PlayerLoopSystem CreateStateRunnerLoop<TStateRunner>(TStateRunner stateRunner, UpdateType updateType) where TStateRunner : IStateRunner
         {
+            StateManager.Runners[(int)updateType] = stateRunner;
             return new PlayerLoopSystem
             {
-                type = typeof(StateRunner),
-                updateDelegate = updateDelegate
+                type = typeof(TStateRunner),
+                updateDelegate = stateRunner.Run
             };
         }
 
@@ -43,7 +46,7 @@ namespace DVG.StateMachine
             if (rootSubSystems != null)
             {
                 int subSystemCount = rootSubSystems.Length;
-                List<PlayerLoopSystem> newSubSystemList = new(subSystemCount + 4);
+                List<PlayerLoopSystem> newSubSystemList = new(subSystemCount + StateManager.UpdateTypeCount);
 
                 Span<PlayerLoopSystem> allSubSystemsSpan = rootSubSystems.AsSpan();
                 
