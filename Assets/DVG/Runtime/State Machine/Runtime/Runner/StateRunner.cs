@@ -1,56 +1,67 @@
 using System;
+using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+using UnityEngine;
 
 namespace DVG.StateMachine
 {
     internal interface IStateRunner
     {
         public void Run();
+        public bool Register<TOwner>(State<TOwner> state) where TOwner : MonoBehaviour;
+        public void Unregister<TOwner>(State<TOwner> state) where TOwner : MonoBehaviour;
     }
     
-    internal abstract class StateRunner<TUpdate> : IStateRunner
+    internal abstract class StateRunner<TUpdate> : IStateRunner where TUpdate : class, IStateStatus
     {
         private const int _initActiveSize = 128;
         
-        public readonly UpdateType StateRunnerUpdateType;
-        protected readonly TUpdate[] _states;
+        protected TUpdate[] _states = new TUpdate[_initActiveSize];
         protected int _tailIndex;
 
-        protected bool _isRunning;
-        
-        public StateRunner(UpdateType updateType)
+        public void Run()
         {
-            StateRunnerUpdateType  = updateType;
-            _states = new TUpdate[_initActiveSize];
-            _tailIndex = 0;
-            _isRunning = false;
+            Span<TUpdate> stateSpan = _states.AsSpan(0, _tailIndex);
+            for (int i = 0; i < stateSpan.Length; ++i)
+            {
+                var state = stateSpan[i];
+                TickState(state);
+                if (state.IsFinished)
+                {
+                    stateSpan[i] = null;
+                }
+            }
         }
         
-        public abstract void Run();
-        public abstract void Register<TState>(TState state);
-        public abstract void Unregister<TState>(TState state);
+        protected abstract void TickState(TUpdate state);
+
+        public bool Register<TOwner>(State<TOwner> state) where TOwner : MonoBehaviour
+        {
+            if (state is not TUpdate u) return false;
+            
+            AddState(u);
+            return true;
+        }
+
+        public void Unregister<TOwner>(State<TOwner> state) where TOwner : MonoBehaviour
+        {
+            state.
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        protected void AddState(TUpdate state)
+        {
+            if (_states.Length == _tailIndex)
+            {
+                Array.Resize(ref _states, _tailIndex * 2);
+            }
+            _states[_tailIndex++] = state;
+        }
     }
     
     internal sealed class StateRunnerEarlyUpdate : StateRunner<IEarlyUpdate>
     {
-        public StateRunnerEarlyUpdate() : base(UpdateType.EarlyUpdate){}
-
-        public override void Run()
-        {
-            _isRunning = true;
-            Span<IEarlyUpdate> stateSpan = _states.AsSpan(0, _tailIndex);
-            for (int i = 0; i < stateSpan.Length; ++i)
-            {
-                stateSpan[i].EarlyUpdate();
-            }
-            _isRunning = false;
-        }
-
-        public override void Register<TState>(TState state)
-        {
-            if (state is not IEarlyUpdate) return;
-        }
-
-        public override void Unregister<TState>(TState state)
+        protected override void TickState(IEarlyUpdate state)
         {
             throw new NotImplementedException();
         }
@@ -58,65 +69,33 @@ namespace DVG.StateMachine
     
     internal sealed class StateRunnerFixedUpdate : StateRunner<IFixedUpdate>
     {
-        public StateRunnerFixedUpdate() : base(UpdateType.FixedUpdate){}
-        
-        public override void Run()
+        protected override void TickState(IFixedUpdate state)
         {
-            _isRunning = true;
-            Span<IFixedUpdate> stateSpan = _states.AsSpan(0, _tailIndex);
-            for (int i = 0; i < stateSpan.Length; ++i)
-            {
-                stateSpan[i].FixedUpdate();
-            }
-            _isRunning = false;
+            throw new NotImplementedException();
         }
     }
     
     internal sealed class StateRunnerUpdate : StateRunner<IUpdate>
     {
-        public StateRunnerUpdate() : base(UpdateType.Update){}
-        
-        public override void Run()
+        protected override void TickState(IUpdate state)
         {
-            _isRunning = true;
-            Span<IUpdate> stateSpan = _states.AsSpan(0, _tailIndex);
-            for (int i = 0; i < stateSpan.Length; ++i)
-            {
-                stateSpan[i].Update();
-            }
-            _isRunning = false;
+            throw new NotImplementedException();
         }
     }
     
     internal sealed class StateRunnerPreLateUpdate : StateRunner<ILateUpdate>
     {
-        public StateRunnerPreLateUpdate() : base(UpdateType.LateUpdate){}
-        
-        public override void Run()
+        protected override void TickState(ILateUpdate state)
         {
-            _isRunning = true;
-            Span<ILateUpdate> stateSpan = _states.AsSpan(0, _tailIndex);
-            for (int i = 0; i < stateSpan.Length; ++i)
-            {
-                stateSpan[i].LateUpdate();
-            }
-            _isRunning = false;
+            throw new NotImplementedException();
         }
     }
     
     internal sealed class StateRunnerPostLateUpdate : StateRunner<IPostLateUpdate>
     {
-        public StateRunnerPostLateUpdate() : base(UpdateType.PostLateUpdate){}
-        
-        public override void Run()
+        protected override void TickState(IPostLateUpdate state)
         {
-            _isRunning = true;
-            Span<IPostLateUpdate> stateSpan = _states.AsSpan(0, _tailIndex);
-            for (int i = 0; i < stateSpan.Length; ++i)
-            {
-                stateSpan[i].PostLateUpdate();
-            }
-            _isRunning = false;
+            throw new NotImplementedException();
         }
     }
 }

@@ -46,7 +46,7 @@ namespace DVG.StateMachine
             if (rootSubSystems != null)
             {
                 int subSystemCount = rootSubSystems.Length;
-                List<PlayerLoopSystem> newSubSystemList = new(subSystemCount + StateManager.UpdateTypeCount);
+                List<PlayerLoopSystem> newSubSystemList = new(subSystemCount + 1);
 
                 Span<PlayerLoopSystem> allSubSystemsSpan = rootSubSystems.AsSpan();
                 
