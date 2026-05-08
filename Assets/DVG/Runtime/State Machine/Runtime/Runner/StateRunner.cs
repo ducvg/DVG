@@ -31,6 +31,8 @@ namespace DVG.StateMachine
 
         public void Run()
         {
+            int j = _tailIndex - 1;
+            
             Span<TUpdate> stateSpan = _states.AsSpan();
             for (int i = 0; i < stateSpan.Length; ++i)
             {
@@ -50,7 +52,6 @@ namespace DVG.StateMachine
                     }
                 }
 
-                int j = _tailIndex - 1;
                 while (i < j)
                 {
                     var fromTail = stateSpan[j];
@@ -89,10 +90,13 @@ namespace DVG.StateMachine
                 }
 
                 _tailIndex = i; // loop end
+                break;
 
                 NEXT_LOOP:
                 continue;
             }
+            
+            
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -106,11 +110,11 @@ namespace DVG.StateMachine
             return true;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Unregister<TOwner>(State<TOwner> state) where TOwner : MonoBehaviour
         {
             state.IsFinished = true;
         }
-
     }
     
     internal sealed class StateRunnerEarlyUpdate : StateRunner<IEarlyUpdate>
