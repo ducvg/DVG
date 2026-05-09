@@ -24,20 +24,27 @@ namespace DVG.StateMachine
                 return;
             }
             
-            StateManager.Unregister(_currentState);
-            _currentState?.OnExit(Owner);
+            if(_currentState != null)
+            {
+                StateManager.Unregister(_currentState);
+                _currentState.OnExit(Owner);
+            }
             
             _previousState = _currentState;
             _currentState = newState;
             
+            _currentState.IsFinished = false;
             _currentState?.OnEnter(Owner);
             StateManager.Register(_currentState);
         }
 
         public void ClearState()
         {
-            StateManager.Unregister(_currentState);
-            _currentState?.OnExit(Owner);
+            if (_currentState != null)
+            {
+                StateManager.Unregister(_currentState);
+                _currentState.OnExit(Owner);
+            }
             
             _previousState = _currentState = null;
         }

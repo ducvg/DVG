@@ -1,4 +1,5 @@
 ﻿using System;
+using UnityEditor;
 using UnityEngine;
 
 namespace DVG.StateMachine
@@ -6,10 +7,33 @@ namespace DVG.StateMachine
     public static class StateManager
     {
         internal static IStateRunner[] Runners { get; }
-
+        
+        private static bool _isInitialized;
+        
         static StateManager()
         {
-            Runners = new IStateRunner[Enum.GetValues(typeof(UpdateType)).Length];
+            Runners = new IStateRunner[5];
+        }
+
+#if UNITY_2020_1_OR_NEWER
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+#else
+		[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+#endif        
+        public static void Initialize()
+        {
+
+#if UNITY_EDITOR && UNITY_2019_3_OR_NEWER
+            // When domain reload is disabled, re-initialization is required when entering play mode; 
+            // otherwise, pending tasks will leak between play mode sessions.
+            var domainReloadDisabled = UnityEditor.EditorSettings.enterPlayModeOptionsEnabled &&
+                                       UnityEditor.EditorSettings.enterPlayModeOptions.HasFlag(UnityEditor.EnterPlayModeOptions.DisableDomainReload);
+            if (!domainReloadDisabled && Runners.Length > 0) return;
+#else
+            if (Runners.Length > 0) return; // already initialized
+#endif
+            
+            RunnerBootstrapper.Initialize();
         }
         
         public static void Register<TOwner>(State<TOwner> state) where TOwner : MonoBehaviour
@@ -22,10 +46,7 @@ namespace DVG.StateMachine
 
         public static void Unregister<TOwner>(State<TOwner> state) where TOwner : MonoBehaviour
         {
-            foreach (var runner in Runners)
-            {
-                runner.Unregister(state);
-            }
+            state.IsFinished = true;
         }
     }
 }

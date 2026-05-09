@@ -10,7 +10,7 @@ namespace DVG.StateMachine
     {
         public void Run();
         public bool Register<TOwner>(State<TOwner> state) where TOwner : MonoBehaviour;
-        public void Unregister<TOwner>(State<TOwner> state) where TOwner : MonoBehaviour;
+        // public void Unregister<TOwner>(State<TOwner> state) where TOwner : MonoBehaviour;
     }
     
     internal abstract class StateRunner<TUpdate> : IStateRunner where TUpdate : IStateStatus
@@ -29,7 +29,7 @@ namespace DVG.StateMachine
             Span<TUpdate> stateSpan = _states.AsSpan();
             for (int i = 0; i < stateSpan.Length; ++i)
             {
-                var state = stateSpan[i];
+                TUpdate state = stateSpan[i];
                 if(state != null)
                 {
                     try
@@ -47,7 +47,7 @@ namespace DVG.StateMachine
 
                 while (i < j)
                 {
-                    var fromTail = stateSpan[j];
+                    TUpdate fromTail = stateSpan[j];
                     if (fromTail != null)
                     {
                         try
@@ -108,12 +108,6 @@ namespace DVG.StateMachine
             
             _pendingAddStack.Push(u);
             return true;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Unregister<TOwner>(State<TOwner> state) where TOwner : MonoBehaviour
-        {
-            state.IsFinished = true;
         }
     }
     
