@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using DVG.StateMachine.Editor;
 using UnityEngine;
 
 namespace DVG.StateMachine
@@ -15,19 +16,11 @@ namespace DVG.StateMachine
     internal abstract class StateRunner<TUpdate> : IStateRunner where TUpdate : IStateStatus
     {
         private const int _initActiveSize = 128;
+        private const int _initPendingAddSize = 64;
         
         protected TUpdate[] _states = new TUpdate[_initActiveSize];
         protected int _tailIndex;
-        
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void AddState(TUpdate state)
-        {
-            if (_states.Length == _tailIndex)
-            {
-                Array.Resize(ref _states, _tailIndex * 2);
-            }
-            _states[_tailIndex++] = state;
-        }
+        protected LiteStack<TUpdate> _pendingAddStack = new(_initPendingAddSize);
 
         public void Run()
         {
@@ -42,12 +35,12 @@ namespace DVG.StateMachine
                     try
                     {
                         TickState(state);
-                        if (state.IsFinished) _states[i] = default;
+                        if (state.IsFinished) stateSpan[i] = default;
                         else continue;
                     }
                     catch (Exception e)
                     {
-                        _states[i] = default;
+                        stateSpan[i] = default;
                         Debug.LogException(e);
                     }
                 }
@@ -95,8 +88,15 @@ namespace DVG.StateMachine
                 NEXT_LOOP:
                 continue;
             }
-            
-            
+
+            while (_pendingAddStack.Count > 0)
+            {
+                if (_states.Length == _tailIndex)
+                {
+                    Array.Resize(ref _states, _tailIndex * 2);
+                }
+                _states[_tailIndex++] = _pendingAddStack.Pop();
+            }
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -106,7 +106,7 @@ namespace DVG.StateMachine
         {
             if (state is not TUpdate u) return false;
             
-            AddState(u);
+            _pendingAddStack.Push(u);
             return true;
         }
 
