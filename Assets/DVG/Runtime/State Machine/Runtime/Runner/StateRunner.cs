@@ -1,82 +1,164 @@
+using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+using DVG.StateMachine.Editor;
+using UnityEngine;
 
 namespace DVG.StateMachine
 {
-    public static class StateRunner
+    internal interface IStateRunner
     {
-        private const int _initModifySize = 64;
-        private static readonly HashSet<object> _addStates = new(_initModifySize);
-        private static readonly HashSet<object> _removeStates = new(_initModifySize);
+        public void Run();
+        public bool Register<TOwner>(State<TOwner> state) where TOwner : MonoBehaviour;
+        public void Unregister<TOwner>(State<TOwner> state) where TOwner : MonoBehaviour;
+    }
+    
+    internal abstract class StateRunner<TUpdate> : IStateRunner where TUpdate : IStateStatus
+    {
+        private const int _initActiveSize = 128;
+        private const int _initPendingAddSize = 64;
+        
+        protected TUpdate[] _states = new TUpdate[_initActiveSize];
+        protected int _tailIndex;
+        protected LiteStack<TUpdate> _pendingAddStack = new(_initPendingAddSize);
 
-        private const int _initActiveSize = 256;
-        private static readonly HashSet<IEarlyUpdate> _earlyUpdateStates = new(_initActiveSize);
-        private static readonly HashSet<IUpdate> _updateStates = new(_initActiveSize);
-        private static readonly HashSet<ILateUpdate> _lateUpdateStates = new(_initActiveSize);
-        private static readonly HashSet<IFixedUpdate> _fixedUpdateStates = new(_initActiveSize);
-
-        public static void EarlyUpdate()
+        public void Run()
         {
-            HandleRegister();
-            HandleDeregister();
-            foreach(var state in _earlyUpdateStates) state.EarlyUpdate();
-        }
-
-        public static void Update() 
-        {
-            HandleRegister();
-            HandleDeregister();
-            foreach(var state in _updateStates) state.Update();
-        }
-
-        public static void PreLateUpdate() 
-        {
-            HandleRegister();
-            HandleDeregister();
-            foreach(var state in _lateUpdateStates) state.LateUpdate();
-        }
-
-        public static void FixedUpdate() 
-        {
-            HandleRegister();
-            HandleDeregister();
-            foreach(var state in _fixedUpdateStates) state.FixedUpdate();
-        }
-
-        public static void Register(object state)
-        {
-            _removeStates.Remove(state);
-            _addStates.Add(state);
-        }
-
-        public static void Deregister(object state)
-        {
-            _addStates.Remove(state);
-            _removeStates.Add(state);
-        }
-
-        //500 cigarettes
-        private static void HandleRegister()
-        {
-            foreach (object state in _addStates)
+            int j = _tailIndex - 1;
+            
+            Span<TUpdate> stateSpan = _states.AsSpan();
+            for (int i = 0; i < stateSpan.Length; ++i)
             {
-                if(state is IEarlyUpdate eu) _earlyUpdateStates.Add(eu);
-                if(state is IUpdate u) _updateStates.Add(u);
-                if(state is ILateUpdate lu) _lateUpdateStates.Add(lu);
-                if(state is IFixedUpdate fu) _fixedUpdateStates.Add(fu);
+                var state = stateSpan[i];
+                if(state != null)
+                {
+                    try
+                    {
+                        TickState(state);
+                        if (state.IsFinished) stateSpan[i] = default;
+                        else continue;
+                    }
+                    catch (Exception e)
+                    {
+                        stateSpan[i] = default;
+                        Debug.LogException(e);
+                    }
+                }
+
+                while (i < j)
+                {
+                    var fromTail = stateSpan[j];
+                    if (fromTail != null)
+                    {
+                        try
+                        {
+                            TickState(fromTail);
+                            if (fromTail.IsFinished)
+                            {
+                                stateSpan[j] = default;
+                                j--;
+                                continue; // next j
+                            }
+                            else
+                            {
+                                // swap
+                                stateSpan[i] = fromTail;
+                                stateSpan[j] = default;
+                                j--;
+                                goto NEXT_LOOP; // next i
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            stateSpan[j] = default;
+                            j--;
+                            Debug.LogException(ex);
+                            continue; // next j
+                        }
+                    }
+                    else
+                    {
+                        j--;
+                    }
+                }
+
+                _tailIndex = i; // loop end
+                break;
+
+                NEXT_LOOP:
+                continue;
             }
-            _addStates.Clear();
+
+            while (_pendingAddStack.Count > 0)
+            {
+                if (_states.Length == _tailIndex)
+                {
+                    Array.Resize(ref _states, _tailIndex * 2);
+                }
+                _states[_tailIndex++] = _pendingAddStack.Pop();
+            }
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        protected abstract void TickState(TUpdate state);
+
+        public bool Register<TOwner>(State<TOwner> state) where TOwner : MonoBehaviour
+        {
+            if (state is not TUpdate u) return false;
+            
+            _pendingAddStack.Push(u);
+            return true;
         }
 
-        private static void HandleDeregister()
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Unregister<TOwner>(State<TOwner> state) where TOwner : MonoBehaviour
         {
-            foreach (object state in _removeStates)
-            {
-                if(state is IEarlyUpdate eu) _earlyUpdateStates.Remove(eu);
-                if(state is IUpdate u) _updateStates.Remove(u);
-                if(state is ILateUpdate lu) _lateUpdateStates.Remove(lu);
-                if(state is IFixedUpdate fu) _fixedUpdateStates.Remove(fu);
-            }
-            _removeStates.Clear();
+            state.IsFinished = true;
+        }
+    }
+    
+    internal sealed class StateRunnerEarlyUpdate : StateRunner<IEarlyUpdate>
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        protected override void TickState(IEarlyUpdate state)
+        {
+            state.EarlyUpdate();
+        }
+    }
+    
+    internal sealed class StateRunnerFixedUpdate : StateRunner<IFixedUpdate>
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        protected override void TickState(IFixedUpdate state)
+        {
+            state.FixedUpdate();
+        }
+    }
+    
+    internal sealed class StateRunnerUpdate : StateRunner<IUpdate>
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        protected override void TickState(IUpdate state)
+        {
+            state.Update();
+        }
+    }
+    
+    internal sealed class StateRunnerPreLateUpdate : StateRunner<ILateUpdate>
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        protected override void TickState(ILateUpdate state)
+        {
+            state.LateUpdate();
+        }
+    }
+    
+    internal sealed class StateRunnerPostLateUpdate : StateRunner<IPostLateUpdate>
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        protected override void TickState(IPostLateUpdate state)
+        {
+            state.PostLateUpdate();
         }
     }
 }

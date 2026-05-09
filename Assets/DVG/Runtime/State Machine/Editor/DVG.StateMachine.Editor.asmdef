@@ -1,0 +1,18 @@
+{
+    "name": "DVG.StateMachine.Editor",
+    "rootNamespace": "DVG.StateMachine.Editor",
+    "references": [
+        "GUID:978bedb3e99e68a419e15f6a1c0d2809"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
