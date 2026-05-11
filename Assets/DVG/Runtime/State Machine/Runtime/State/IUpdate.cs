@@ -1,27 +1,27 @@
 ﻿namespace DVG.StateMachine
 {
-    public interface IEarlyUpdate : IStateStatus
+    public interface IEarlyUpdate : IState
     {
-        public void EarlyUpdate();
+        public void EarlyUpdate(float deltaTime);
     }
     
-    public interface IFixedUpdate : IStateStatus
+    public interface IFixedUpdate : IState
     {
-        public void FixedUpdate();
+        public void FixedUpdate(float fixedDeltaTime);
     }
     
-    public interface IUpdate : IStateStatus
-    {
-        public void Update();
+    public interface IUpdate : IState
+    {   
+        public void Update(float deltaTime);
     }
     
-    public interface ILateUpdate : IStateStatus
+    public interface ILateUpdate : IState
     {
-        public void LateUpdate();
+        public void LateUpdate(float deltaTime);
     }
 
-    public interface IPostLateUpdate : IStateStatus
+    public interface IPostLateUpdate : IState
     {
-        public void PostLateUpdate();
+        public void PostLateUpdate(float deltaTime);
     }
 }

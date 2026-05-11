@@ -38,6 +38,8 @@ namespace DVG.StateMachine
         
         public static void Register<TOwner>(State<TOwner> state) where TOwner : MonoBehaviour
         {
+            state.IsFinished = false;
+            
             foreach (var runner in Runners)
             {
                 runner.Register(state);

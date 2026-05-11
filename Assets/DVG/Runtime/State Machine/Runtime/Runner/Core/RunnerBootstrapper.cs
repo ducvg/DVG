@@ -43,7 +43,7 @@ namespace DVG.StateMachine
             return new PlayerLoopSystem
             {
                 type = typeof(TStateRunner),
-                updateDelegate = stateRunner.Run
+                updateDelegate = () => stateRunner.Run(Time.deltaTime, Time.fixedDeltaTime)
             };
         }
 

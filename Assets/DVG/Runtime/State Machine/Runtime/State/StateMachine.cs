@@ -1,3 +1,4 @@
+using System.Threading;
 using UnityEngine;
 
 namespace DVG.StateMachine
@@ -9,11 +10,13 @@ namespace DVG.StateMachine
         protected State<TOwner> _currentState;
         protected State<TOwner> _previousState;
 
+        private CancellationTokenRegistration _destroyCtRegistration;
+
         public void SetOwner(TOwner owner)
         {
             if(Owner == owner) return;
             Owner = owner;
-            Owner.destroyCancellationToken.Register(OnDestroy);
+            _destroyCtRegistration = Owner.destroyCancellationToken.Register(Destroy); //incase forgot stateMachine.Destroy()
         }
 
         public void ChangeState<TState>(TState newState) where TState : State<TOwner>
@@ -33,8 +36,8 @@ namespace DVG.StateMachine
             _previousState = _currentState;
             _currentState = newState;
             
-            _currentState.IsFinished = false;
-            _currentState?.OnEnter(Owner);
+            
+            _currentState.OnEnter(Owner);
             StateManager.Register(_currentState);
         }
 
@@ -49,9 +52,10 @@ namespace DVG.StateMachine
             _previousState = _currentState = null;
         }
 
-        private void OnDestroy()
+        public virtual void Destroy()
         {
-            if(_currentState != null) StateManager.Unregister(_currentState);
+            ClearState();
+            _destroyCtRegistration.Dispose();
         }
     }
 }

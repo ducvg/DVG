@@ -162,9 +162,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 1527707178}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: aad89bf968fe4bd45bccd3364a7aafda, type: 3}
+  m_Script: {fileID: 11500000, guid: d40fad91d0279b24f8924d1c640e8732, type: 3}
   m_Name: 
   m_EditorClassIdentifier: DVG.Timer.Runtime::TimerDriver
+  _movementStateMachine:
+    <RunState>k__BackingField:
+      <SmokeParticle>k__BackingField: {fileID: 0}
 --- !u!4 &1527707180
 Transform:
   m_ObjectHideFlags: 0
@@ -208,23 +211,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: StateMachine.Sample::Player
   _movementStateMachine:
-    _statesHistory:
-    - 
-    - 
-    - 
-    - 
-    - 
-    - 
-    - 
-    - 
-    - 
-    - 
-    - 
-    - 
-    - 
-    - 
-    - 
-    - 
     <RunState>k__BackingField:
       <SmokeParticle>k__BackingField: {fileID: 0}
 --- !u!1 &1973972040
@@ -381,6 +367,5 @@ SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
   - {fileID: 1973972042}
-  - {fileID: 483870108}
   - {fileID: 1592766997}
   - {fileID: 1527707180}

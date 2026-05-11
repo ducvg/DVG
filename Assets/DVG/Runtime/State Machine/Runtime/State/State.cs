@@ -3,12 +3,12 @@ using UnityEngine;
 
 namespace DVG.StateMachine
 {
-    public interface IStateStatus
+    public interface IState
     {
         public bool IsFinished { get; }
     }
     
-    public abstract class State<TOwner> : IStateStatus where TOwner : MonoBehaviour
+    public abstract class State<TOwner> : IState where TOwner : MonoBehaviour
     {
         public bool IsFinished 
         { 
