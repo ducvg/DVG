@@ -16,9 +16,16 @@ namespace DVG.Editor
                 "Assets/_Projects",
 
                 "Assets/_Projects/_Graphics",
-                "Assets/_Projects/_Graphics/Models",
-                "Assets/_Projects/_Graphics/MaterialTexture",
-                "Assets/_Projects/_Graphics/Sprites",
+                
+                "Assets/_Projects/_Graphics/3D",
+                "Assets/_Projects/_Graphics/3D/Models",
+                "Assets/_Projects/_Graphics/3D/Material",
+                "Assets/_Projects/_Graphics/3D/Texture",
+                
+                "Assets/_Projects/_Graphics/2D",
+                "Assets/_Projects/_Graphics/2D/Sprites",
+                "Assets/_Projects/_Graphics/2D/Texture",
+                "Assets/_Projects/_Graphics/2D/Material",
                 "Assets/_Projects/_Graphics/Shader",
                 "Assets/_Projects/_Graphics/Animation",
                 "Assets/_Projects/_Graphics/~Font",
