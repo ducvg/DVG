@@ -6,14 +6,10 @@ namespace DVG.StateMachine
 {
     public static class StateManager
     {
-        internal static IStateRunner[] Runners { get; }
+        internal static IStateRunner[] Runners { get; private set; }
         
         private static bool _isInitialized;
-        
-        static StateManager()
-        {
-            Runners = new IStateRunner[5];
-        }
+    
 
 #if UNITY_2020_1_OR_NEWER
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
@@ -34,6 +30,11 @@ namespace DVG.StateMachine
 #endif
             
             RunnerBootstrapper.Initialize();
+        }
+
+        internal static void SetRunners(params IStateRunner[] runners)
+        {
+            Runners = runners;
         }
         
         public static void Register<TOwner>(State<TOwner> state) where TOwner : MonoBehaviour

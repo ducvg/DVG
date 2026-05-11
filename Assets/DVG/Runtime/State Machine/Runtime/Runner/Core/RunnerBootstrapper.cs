@@ -18,14 +18,42 @@ namespace DVG.StateMachine
 #else
                 PlayerLoop.GetDefaultPlayerLoop();
 #endif
-            PlayerLoopSystem earlyUpdateLoop = CreateStateRunnerLoop(new StateRunnerEarlyUpdate(), 0);
-            PlayerLoopSystem fixedUpdate = CreateStateRunnerLoop(new StateRunnerFixedUpdate(), 1);
-            PlayerLoopSystem updateLoop = CreateStateRunnerLoop(new StateRunnerUpdate(),2);
-            PlayerLoopSystem preLateUpdateLoop = CreateStateRunnerLoop(new StateRunnerPreLateUpdate(), 3);
-            PlayerLoopSystem postLateUpdateLoop = CreateStateRunnerLoop(new StateRunnerPostLateUpdate(), 4);
+            var earlyUpdateRunner = new StateRunnerEarlyUpdate();
+            var fixedUpdateRunner = new StateRunnerFixedUpdate();
+            var updateRunner = new StateRunnerUpdate();
+            var preLateUpdateRunner = new StateRunnerPreLateUpdate();
+            var postLateUpdateRunner = new StateRunnerPostLateUpdate();
+
+            PlayerLoopSystem earlyUpdateLoop = new()
+            {
+                type = typeof(StateRunnerEarlyUpdate),
+                updateDelegate = () => earlyUpdateRunner.Run(Time.deltaTime)
+            };
+            PlayerLoopSystem fixedUpdateLoop = new()
+            {
+                type = typeof(StateRunnerFixedUpdate),
+                updateDelegate = () => fixedUpdateRunner.Run(Time.fixedDeltaTime)
+            };
+            PlayerLoopSystem updateLoop = new()
+            {
+                type = typeof(StateRunnerUpdate),
+                updateDelegate = () => updateRunner.Run(Time.deltaTime)
+            };
+            PlayerLoopSystem preLateUpdateLoop = new()
+            {
+                type = typeof(StateRunnerPreLateUpdate),
+                updateDelegate = () => preLateUpdateRunner.Run(Time.deltaTime)
+            };
+            PlayerLoopSystem postLateUpdateLoop = new()
+            {
+                type = typeof(StateRunnerPostLateUpdate),
+                updateDelegate = () => postLateUpdateRunner.Run(Time.deltaTime)
+            };
+
+            StateManager.SetRunners(earlyUpdateRunner, fixedUpdateRunner, updateRunner, preLateUpdateRunner, postLateUpdateRunner);
 
             currentPlayerLoop.InsertSystemAt<EarlyUpdate>(earlyUpdateLoop, insertIndex: 0);
-            currentPlayerLoop.InsertSystemAt<FixedUpdate>(fixedUpdate, insertIndex: 0);
+            currentPlayerLoop.InsertSystemAt<FixedUpdate>(fixedUpdateLoop, insertIndex: 0);
             currentPlayerLoop.InsertSystemAt<Update>(updateLoop, insertIndex: 0);
             currentPlayerLoop.InsertSystemAt<PreLateUpdate>(preLateUpdateLoop, insertIndex: 0); //monobehaviour lateupdate() is inside PreLateUpdate
             currentPlayerLoop.InsertSystemAt<PostLateUpdate>(postLateUpdateLoop, insertIndex: 0);
@@ -35,16 +63,6 @@ namespace DVG.StateMachine
 #if UNITY_EDITOR
             EditorApplication.playModeStateChanged += OnPlaymodeExit;
 #endif
-        }
-
-        private static PlayerLoopSystem CreateStateRunnerLoop<TStateRunner>(TStateRunner stateRunner, int runnerIndex) where TStateRunner : IStateRunner
-        {
-            StateManager.Runners[runnerIndex] = stateRunner;
-            return new PlayerLoopSystem
-            {
-                type = typeof(TStateRunner),
-                updateDelegate = () => stateRunner.Run(Time.deltaTime, Time.fixedDeltaTime)
-            };
         }
 
         private static void InsertSystemAt<TLoop>(this ref PlayerLoopSystem rootSystem, in PlayerLoopSystem newSystem, int insertIndex)

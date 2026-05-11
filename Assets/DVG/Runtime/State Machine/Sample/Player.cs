@@ -45,7 +45,7 @@ public class IdleState : State<Player>, IUpdate
         Debug.Log("Exit Idle State");
     }
 
-    public void Update()
+    public void Update(float deltaTime)
     {
         Debug.Log("Update Idle State");
     }
@@ -63,12 +63,12 @@ public class JumpState : State<Player>, ILateUpdate, IFixedUpdate
         Debug.Log("Exit Jump State");
     }
 
-    public void FixedUpdate()
+    public void FixedUpdate(float fixedDeltaTime)
     {
         Debug.Log("FixedUpdate Jump State");
     }
 
-    public void LateUpdate()
+    public void LateUpdate(float deltaTime)
     {   
         Debug.Log("LateUpdate Jump State");
     }
@@ -92,12 +92,12 @@ public class RunState : State<Player>, IUpdate, IFixedUpdate
         Debug.Log("Exit Run State");
     }
 
-    public void FixedUpdate()
+    public void FixedUpdate(float fixedDeltaTime)
     {
         Debug.Log("FixedUpdate Run State");
     }
 
-    public void Update()
+    public void Update(float deltaTime)
     {
         Debug.Log("Update Run State");
     }
