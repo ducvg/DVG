@@ -1,7 +1,5 @@
 using System;
-using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using DVG.StateMachine.Editor;
 using UnityEngine;
 
 namespace DVG.StateMachine
@@ -13,7 +11,7 @@ namespace DVG.StateMachine
         // public void Unregister<TOwner>(State<TOwner> state) where TOwner : MonoBehaviour;
     }
     
-    internal abstract class StateRunner<TUpdate> : IStateRunner where TUpdate : IState
+    internal abstract class StateRunner<TUpdate> : IStateRunner
     {
         private const int _initActiveSize = 128;
         private const int _initPendingAddSize = 64;
@@ -35,7 +33,7 @@ namespace DVG.StateMachine
                     try
                     {
                         TickState(state, deltaTime);
-                        if (state.IsFinished) stateSpan[i] = default;
+                        if (Unsafe.As<TUpdate, State<MonoBehaviour>>(ref state).IsFinished) stateSpan[i] = default;
                         else continue;
                     }
                     catch (Exception e)
@@ -53,7 +51,7 @@ namespace DVG.StateMachine
                         try
                         {
                             TickState(fromTail, deltaTime);
-                            if (fromTail.IsFinished)
+                            if (Unsafe.As<TUpdate, State<MonoBehaviour>>(ref fromTail).IsFinished)
                             {
                                 stateSpan[j] = default;
                                 j--;
@@ -99,6 +97,7 @@ namespace DVG.StateMachine
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected abstract void TickState(TUpdate state, float deltaTime);
 
         public bool Register<TOwner>(State<TOwner> state) where TOwner : MonoBehaviour

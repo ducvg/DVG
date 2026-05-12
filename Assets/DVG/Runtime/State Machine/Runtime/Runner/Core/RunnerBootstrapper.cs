@@ -129,8 +129,8 @@ namespace DVG.StateMachine
 
                     if (subSystem.type == typeof(TLoop))
                     {
-                        subSystem.subSystemList = subSystem.subSystemList
-                            ?.Where(s => s.type != systemToRemove)
+                        subSystem.subSystemList = subSystem.subSystemList?
+                            .Where(s => s.type != systemToRemove)
                             .ToArray();
                     }
 

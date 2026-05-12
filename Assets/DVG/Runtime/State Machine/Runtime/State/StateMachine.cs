@@ -8,7 +8,6 @@ namespace DVG.StateMachine
         protected TOwner Owner;
         
         protected State<TOwner> _currentState;
-        protected State<TOwner> _previousState;
 
         private CancellationTokenRegistration _destroyCtRegistration;
 
@@ -16,7 +15,9 @@ namespace DVG.StateMachine
         {
             if(Owner == owner) return;
             Owner = owner;
-            _destroyCtRegistration = Owner.destroyCancellationToken.Register(Destroy); //incase forgot stateMachine.Destroy()
+            //incase forgot stateMachine.Dispose()
+            //must manually call Dispose() if not set owner
+            _destroyCtRegistration = Owner.destroyCancellationToken.Register(Dispose); 
         }
 
         public void ChangeState<TState>(TState newState) where TState : State<TOwner>
@@ -33,7 +34,6 @@ namespace DVG.StateMachine
                 _currentState.OnExit(Owner);
             }
             
-            _previousState = _currentState;
             _currentState = newState;
             
             
@@ -49,10 +49,10 @@ namespace DVG.StateMachine
                 _currentState.OnExit(Owner);
             }
             
-            _previousState = _currentState = null;
+            _currentState = null;
         }
 
-        public virtual void Destroy()
+        public virtual void Dispose() //must manully call this if not set onwer
         {
             ClearState();
             _destroyCtRegistration.Dispose();
