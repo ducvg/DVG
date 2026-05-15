@@ -6,10 +6,7 @@ namespace DVG.StateMachine
 {
     public static class StateManager
     {
-        internal static IStateRunner[] Runners { get; private set; }
-        
-        private static bool _isInitialized;
-    
+        internal static IStateRunner[] Runners { get; private set; }    
 
 #if UNITY_2020_1_OR_NEWER
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]

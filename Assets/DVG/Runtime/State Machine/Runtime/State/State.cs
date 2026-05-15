@@ -3,19 +3,14 @@ using UnityEngine;
 
 namespace DVG.StateMachine
 {
-    public interface IState
+    public abstract class State<TOwner> where TOwner : MonoBehaviour
     {
-        public bool IsFinished { get; }
-    }
-    
-    public abstract class State<TOwner> : IState where TOwner : MonoBehaviour
-    {
-        public bool IsFinished 
+        internal bool IsFinished 
         { 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get; 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            internal set; 
+            set; 
         }
         
         public abstract void OnEnter(TOwner owner);

@@ -3,7 +3,7 @@
 using System;
 using System.Runtime.CompilerServices;
 
-namespace DVG.StateMachine.Editor
+namespace DVG.StateMachine
 {
     //stack has least complexity, footprint
     internal class LiteStack<T>

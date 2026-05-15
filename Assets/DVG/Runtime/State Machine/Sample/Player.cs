@@ -6,6 +6,11 @@ public class Player : MonoBehaviour
 {
     [SerializeField] private PlayerMovementStateMachine _movementStateMachine;
     
+    void Start()
+    {
+        _movementStateMachine.SetOwner(this);
+    }
+
     void Update()
     {
        if(Input.GetKeyDown(KeyCode.Alpha1))
