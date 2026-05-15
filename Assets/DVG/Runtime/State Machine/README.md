@@ -38,7 +38,7 @@ The state machine, must implement StateMachine<Owner> with owner is who using th
 public sealed class PlayerMovementStateMachine : StateMachine<Player>
 {
     public readonly PlayerIdleState IdleState = new();
-    [field: SerializeField] public readonly PlayerWalkState WalkState { get; private set; }
+    [field: SerializeField] public PlayerWalkState WalkState { get; private set; }
 }
 ```
 The state, must implement IState<Owner> with owner is who using the state machine.<br>
