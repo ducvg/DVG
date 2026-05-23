@@ -1,5 +1,5 @@
 # Timer
-Git package URL: https://github.com/ducvg/DVG.git?path=Assets/DVG/Runtime/Timer<br>
+https://github.com/ducvg/DVG.git?path=Assets/DVG/Runtime/Timer<br>
 #### Features
  - No allocation with struct based design.
  - Optimized by utilizing unity DOTS.
