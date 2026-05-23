@@ -1,0 +1,18 @@
+{
+    "name": "DVG.Timer.Editor",
+    "rootNamespace": "DVG.Timer.Editor",
+    "references": [
+        "GUID:96153d1dbf42efa48a7777f814a20176"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
