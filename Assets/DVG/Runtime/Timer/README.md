@@ -36,13 +36,8 @@ public class Character: MonoBehaviour
 - `TimerSetting` hold settings fields
 	- `JobBatchCount`: default 32, used for scheduling update timers job. Increase or decrease accordingly to usage.
 #### Create Timer
-- `Timer.Create(duration)` will return a `Timer` instance. A Timer instance can be used for start, paused, continue, complete and stop.
-	- Start: when the timer is created after `.Create` the timer will not run by default but wait until `.Run()`.
-	- Paused: when `.Paused()` on a running timer.
-	- Continue: when `.Run()` on a paused timer.
-	- Complete: when timer complete its duration normally, or skipped by `.Complete()`
-	- Stop: when the gameobject binded in timer with `.BindTo()` is destroyed, or by `.Stop()`
-- `.Create` parameters:
+- Start everything with `Timer.Create(duration)` to get a Timer instance.
+- `.Create` overload parameters:
 	- `float duration`: the duration of the timer.
 	- `float tickRateSeconds`:default 0, used for `.OnTick` callback, invoke every after that time amount.
 	- `int loops`: default 0, timer keep running until completed this amount of loop.
