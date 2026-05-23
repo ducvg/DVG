@@ -41,7 +41,7 @@ public class Character: MonoBehaviour
 	- `float duration`: the duration of the timer.
 	- `float tickRateSeconds`:default 0, used for `.OnTick` callback, invoke every after that time amount.
 	- `int loops`: default 0, timer keep running until completed this amount of loop.
-	- `bool preserved`:defaut false, by default timer will be cleaned after it is Stopped or Finished, set to true will allow reuse. **Can cause Leak, use with .BindTo() or .Dipose()**
+	- `bool preserved`:defaut false, by default timer will be cleaned after it is Stopped or Finished, set to true will allow reuse.<br> **Will Leak if not use with .BindTo() or .Dispose()**
 	- `TimerTiming timing`: default scaled time. `TimerTiming.ScaledTime` or `.UnscaledTime`
 	- `TimerUpdater updater`: default Update. `TimerUpdater.EarlyUpdate`, `.FixedUpdate`, `.Update`,...
  - `.BindTo(Monobehaviour)` is optional. It will bind the timer lifetime to a gameobject ensure no leak, destroy the binded gameobject will release the timer.
@@ -51,14 +51,15 @@ public class Character: MonoBehaviour
   	- `.ElapsedTime` return timer total elapsed time, include loops.
   	- `.Loops` return total loops count
   	- `.CompletedLoops` return completed loops count
-  	- `.CycleElapsedTime` return current loop elapsed time
+  	- `.LoopElapsedTime` return current loop elapsed time
   	- `.IsRunning`, `.IsComplete`, `.IsPaused`
 - Actions:
 	- `.Run()`: start the timer when its created or **Continue** the timer if its Paused.
 	- `.Pause()`: pause the timer when it is Running.
 	- `.Stop()`: stop the timer when it is Running or Paused. Retain timer's progress.
 	- `.Complete()`: complete the timer immdiately, including its progress.
-	- `.Reset()`: reset timer progress back to first creation with `.Create()`;
+	- `.Reset()`: reset timer progress back to first creation with `.Create()`.
+ 	- `.Reset(float duration)` same as Reset() but with a new duration.
 #### Add Callback
 - Chain after a timer instance
 	- `.OnStart()`: invoked when the timer first started.
