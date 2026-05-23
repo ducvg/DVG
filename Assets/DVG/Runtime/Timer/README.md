@@ -2,7 +2,7 @@
 https://github.com/ducvg/DVG.git?path=Assets/DVG/Runtime/Timer
 #### Features
  - No allocation with struct based design.
- - Utilizing unity DOTS for optimization.
+ - Utilizing unity DOTS for performance.
  - Hooked onto unity internal loops allows precise game timing.
  - **Ticks will run before monobehaviour scripts update's (timer updates before monobehaviour update)**, shouldnt be a problem tho
 ### Example
