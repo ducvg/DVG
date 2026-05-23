@@ -95,7 +95,7 @@ namespace DVG.Timers
 				float tickRateSeconds = timerDataPtr->TickRateSeconds;
 				float newElapsedTime = timerDataPtr->ElapsedTime + deltaTime;
 
-				if(tickRateSeconds > 0)
+				if(tickRateSeconds > deltaTime)
 				{
 					float invTickRate = 1f / tickRateSeconds;
 					float prevElapsed = timerDataPtr->ElapsedTime;
