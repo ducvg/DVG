@@ -10,19 +10,19 @@ using LitMotion.Extensions;
 namespace DVG.UI
 {    
     [Serializable]
-    public sealed class Fade : ITransition
+    public sealed class Fade : Transition
     {
         [SerializeField] private SerializableMotionSettings<float, NoOptions> _setting;
         [SerializeField] private CanvasGroup _canvasGroup;
         private MotionHandle _handle;
 
-        public UniTask Run(CancellationToken ct)
+        public override UniTask Run(CancellationToken ct)
         {
             _handle = LMotion.Create(_setting).BindToAlpha(_canvasGroup);
             return _handle.ToUniTask(ct);
         }
 
-        public void Complete() 
+        public override void Complete() 
         {
             _handle.Complete();
             // _canvasGroup.alpha = _setting.EndValue;

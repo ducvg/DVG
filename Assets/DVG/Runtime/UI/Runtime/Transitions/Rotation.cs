@@ -9,19 +9,19 @@ using UnityEngine;
 namespace DVG.UI
 {    
     [Serializable]
-    public sealed class Rotation : ITransition
+    public sealed class Rotation : Transition
     {
         [SerializeField] private SerializableMotionSettings<Vector3, NoOptions> _setting;
         [SerializeField] private Transform _target;
         private MotionHandle _handle;
 
-        public UniTask Run(CancellationToken ct)
+        public override UniTask Run(CancellationToken ct)
         {
             _handle = LMotion.Create(_setting).BindToLocalEulerAngles(_target);
             return _handle.ToUniTask(ct);
         }
 
-        public void Complete()
+        public override void Complete()
         {
             _handle.Complete();
             // _target.localRotation = Quaternion.Euler(_setting.EndValue);

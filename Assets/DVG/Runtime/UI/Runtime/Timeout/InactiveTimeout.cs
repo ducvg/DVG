@@ -1,37 +1,32 @@
 using UnityEngine;
-using DVG.Timer;
+using DVG.Timers;
 
 namespace DVG.UI
 {
     [System.Serializable]
-    public sealed class InactiveTimeout : ITimeout
+    public sealed class InactiveTimeout : Timeout
     {
-        [SerializeField] private float _durationSecs;
-        private BaseCanvas _owner;
-        private CountdownTimer _timer;
+		[SerializeField] private float timeoutDuration = 120f;
+        private Timer _timer;
+		
+		public override void Setup(BaseCanvas owner)
+		{
+			_timer = Timer.Create(timeoutDuration).OnStop(owner, OnTimeout).BindTo(owner);
+		}
 
-        public InactiveTimeout()
-        {
-            _timer = new CountdownTimer();
-            _timer.OnStart(OnTimeout);
-        }
+		public override void OnOpen()
+		{
+			_timer.Stop();
+		}
 
-        public void Run(BaseCanvas owner)
-        {
-            _owner = owner;
-            _timer.SetDuration(_durationSecs);
-            _timer.Start();
-        }
+		public override void OnClose()
+		{
+			_timer.Run();
+		}
 
-        public void Stop(BaseCanvas owner)
-        {
-            _timer.Pause();
-        }
-
-        private void OnTimeout()
-        {
-            _timer.OnFinish(OnTimeout);
-            Object.Destroy(_owner.gameObject);
-        }
+		private void OnTimeout(BaseCanvas owner)
+		{
+			Object.Destroy(owner);
+		}
     }    
 }

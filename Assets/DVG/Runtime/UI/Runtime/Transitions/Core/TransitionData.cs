@@ -11,8 +11,8 @@ namespace DVG.UI
     [Serializable]
     public sealed class TransitionData
     {
-        [SerializeReference] private ITransition[] openTransitions;
-        [SerializeReference] private ITransition[] closeTransitions;
+        [SerializeReference] private Transition[] openTransitions;
+        [SerializeReference] private Transition[] closeTransitions;
 
         public UniTask Open(CancellationToken ct)
         {
