@@ -1,5 +1,5 @@
 # State Machine
-Git package URL: https://github.com/ducvg/DVG.git?path=Assets/DVG/Runtime/State%20Machine<br>
+https://github.com/ducvg/DVG.git?path=Assets/DVG/Runtime/State%20Machine<br>
 Full serializable state machine, mark [Serializable] on any state machines or states that want to be serialized<br>
 #### State Update Behaviours
  - Supported updates: EarlyUpdate, FixedUpdate, Update, LateUpdate(PreLateUpdate in internal loop)
