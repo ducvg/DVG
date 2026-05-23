@@ -6,7 +6,7 @@ using System.Runtime.CompilerServices;
 namespace DVG.StateMachine
 {
     //stack has least complexity, footprint
-    internal class LiteStack<T>
+    internal sealed class LiteStack<T>
     {
         private T[] _array;
         private int _size;
@@ -44,7 +44,7 @@ namespace DVG.StateMachine
                 ++_size;
 
                 int newcapacity = _array.Length == 0 ? 16 : _array.Length * 2;
-                if ((uint)newcapacity > arrayMaxLength) newcapacity = arrayMaxLength;
+                if (newcapacity > arrayMaxLength) newcapacity = arrayMaxLength;
                 if (newcapacity < _size) newcapacity = _size;
                 
                 Array.Resize(ref _array, newcapacity);

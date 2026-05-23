@@ -1,6 +1,5 @@
 ﻿namespace DVG.StateMachine
-{
-    //Must inherit State<TOwner> class 
+{         
     public interface IEarlyUpdate
     {
         public void EarlyUpdate(float deltaTime);

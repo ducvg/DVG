@@ -5,13 +5,7 @@ namespace DVG.StateMachine
 {
     public abstract class State<TOwner> where TOwner : MonoBehaviour
     {
-        internal bool IsFinished 
-        { 
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get; 
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            set; 
-        }
+        internal bool IsFinished;
         
         public abstract void OnEnter(TOwner owner);
         public abstract void OnExit(TOwner owner);

@@ -8,7 +8,7 @@ using System.Collections.Generic;
 
 namespace DVG.UI.Editor
 {
-    [CustomPropertyDrawer(typeof(ITransition), true)]
+    [CustomPropertyDrawer(typeof(Transition), true)]
     public sealed class ITransitionDrawer : PropertyDrawer
     {
         static readonly Type[] _types;
@@ -24,7 +24,7 @@ namespace DVG.UI.Editor
                     catch { return Type.EmptyTypes; }
                 })
                 .Where(t =>
-                    typeof(ITransition).IsAssignableFrom(t) &&
+                    typeof(Transition).IsAssignableFrom(t) &&
                     !t.IsAbstract &&
                     !t.IsInterface &&
                     !t.IsGenericType)

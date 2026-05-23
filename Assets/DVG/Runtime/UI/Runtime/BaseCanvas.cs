@@ -6,7 +6,7 @@ using UnityEngine;
 public abstract class BaseCanvas : MonoBehaviour
 {
     [SerializeField] private TransitionData _transitionData;
-    [SerializeReference] private ITimeout _timeoutStrategy;
+    [SerializeReference] private Timeout _timeoutStrategy;
     private bool _isTransitioning = false;
 
     protected abstract void OnOpen();
@@ -18,7 +18,7 @@ public abstract class BaseCanvas : MonoBehaviour
         if (_isTransitioning) return;
         _isTransitioning = true;
     
-        _timeoutStrategy?.Stop(this);
+        _timeoutStrategy?.OnOpen();
         OnOpen();
 
         await _transitionData.Open(destroyCancellationToken);
@@ -32,7 +32,7 @@ public abstract class BaseCanvas : MonoBehaviour
         if (_isTransitioning) return;
         _isTransitioning = false;
 
-        _timeoutStrategy?.Stop(this);
+        _timeoutStrategy?.OnOpen();
         OnOpen();
 
         _transitionData.CompleteOpen();
@@ -45,7 +45,7 @@ public abstract class BaseCanvas : MonoBehaviour
     
         await _transitionData.Close(destroyCancellationToken);
 
-        _timeoutStrategy?.Run(this);
+        _timeoutStrategy?.OnClose();
         OnClose();
 
         _isTransitioning = false;
@@ -58,7 +58,7 @@ public abstract class BaseCanvas : MonoBehaviour
 
         _transitionData.CompleteClose();
 
-        _timeoutStrategy?.Run(this);
+        _timeoutStrategy?.OnClose();
         OnClose();
     }
 }

@@ -6,58 +6,57 @@ using UnityEngine;
 using UnityEngine.LowLevel;
 using UnityEngine.PlayerLoop;
 
-namespace DVG.StateMachine
+namespace DVG.Timers
 {
-    internal static class RunnerBootstrapper
+    internal static class RunnerManager
     {
-        internal static void Initialize() 
-        {
-            PlayerLoopSystem currentPlayerLoop = 
-#if UNITY_2019_3_OR_NEWER
-                PlayerLoop.GetCurrentPlayerLoop();
-#else
-                PlayerLoop.GetDefaultPlayerLoop();
-#endif
-            var earlyUpdateRunner = new StateRunnerEarlyUpdate();
-            var fixedUpdateRunner = new StateRunnerFixedUpdate();
-            var updateRunner = new StateRunnerUpdate();
-            var preLateUpdateRunner = new StateRunnerPreLateUpdate();
-            var postLateUpdateRunner = new StateRunnerPostLateUpdate();
+		private static void SetupRunners()
+		{
+			TimerUpdater.EarlyUpdate = new TimerRunner(TimerManager.EarlyUpdateStorage);
+			TimerUpdater.FixedUpdate = new TimerRunner(TimerManager.FixedUpdateStorage);
+			TimerUpdater.UpdateRunner = new TimerRunner(TimerManager.UpdateStorage);
+			TimerUpdater.PreLateUpdate = new TimerRunner(TimerManager.PreLateUpdateStorage);
+			TimerUpdater.PostLateUpdate = new TimerRunner(TimerManager.PostLateUpdateStorage);
+		}
 
-            PlayerLoopSystem earlyUpdateLoop = new()
-            {
-                type = typeof(StateRunnerEarlyUpdate),
-                updateDelegate = () => earlyUpdateRunner.Run(Time.deltaTime)
-            };
-            PlayerLoopSystem fixedUpdateLoop = new()
-            {
-                type = typeof(StateRunnerFixedUpdate),
-                updateDelegate = () => fixedUpdateRunner.Run(Time.fixedDeltaTime)
-            };
-            PlayerLoopSystem updateLoop = new()
-            {
-                type = typeof(StateRunnerUpdate),
-                updateDelegate = () => updateRunner.Run(Time.deltaTime)
-            };
-            PlayerLoopSystem preLateUpdateLoop = new()
-            {
-                type = typeof(StateRunnerPreLateUpdate),
-                updateDelegate = () => preLateUpdateRunner.Run(Time.deltaTime)
-            };
-            PlayerLoopSystem postLateUpdateLoop = new()
-            {
-                type = typeof(StateRunnerPostLateUpdate),
-                updateDelegate = () => postLateUpdateRunner.Run(Time.deltaTime)
-            };
+		internal static void Initialize()
+		{
+			SetupRunners();
+			
+			var timerEarlyUpdate = new PlayerLoopSystem
+			{
+				type = typeof(TimerEarlyUpdate),
+				updateDelegate = static () => TimerUpdater.EarlyUpdate.Update(Time.deltaTime, Time.unscaledDeltaTime)
+			};
+			var timerFixedUpdate = new PlayerLoopSystem
+			{
+				type = typeof(TimerFixedUpdate),
+				updateDelegate = static () => TimerUpdater.FixedUpdate.Update(Time.fixedDeltaTime, Time.fixedUnscaledDeltaTime)
+			};
+			var timerUpdate = new PlayerLoopSystem
+			{
+				type = typeof(TimerUpdate),
+				updateDelegate = static () => TimerUpdater.UpdateRunner.Update(Time.deltaTime, Time.unscaledDeltaTime)
+			};
+			var timerPreLateUpdate = new PlayerLoopSystem
+			{
+				type = typeof(TimerPreLateUpdate),
+				updateDelegate = static () => TimerUpdater.PreLateUpdate.Update(Time.deltaTime, Time.unscaledDeltaTime)
+			};
+			var timerPostLateUpdate = new PlayerLoopSystem
+			{
+				type = typeof(TimerPostLateUpdate),
+				updateDelegate = static () => TimerUpdater.PostLateUpdate.Update(Time.deltaTime, Time.unscaledDeltaTime)
+			};
 
-            StateManager.SetRunners(earlyUpdateRunner, fixedUpdateRunner, updateRunner, preLateUpdateRunner, postLateUpdateRunner);
+			PlayerLoopSystem currentPlayerLoop = PlayerLoop.GetCurrentPlayerLoop();
 
-            InsertSystems(ref currentPlayerLoop,
-                earlyUpdateLoop: earlyUpdateLoop,
-                fixedUpdateLoop: fixedUpdateLoop,
-                updateLoop: updateLoop,
-                preLateUpdateLoop: preLateUpdateLoop,
-                postLateUpdateLoop: postLateUpdateLoop
+			InsertSystems(ref currentPlayerLoop,
+                earlyUpdateLoop: timerEarlyUpdate,
+                fixedUpdateLoop: timerFixedUpdate,
+                updateLoop: timerUpdate,
+                preLateUpdateLoop: timerPreLateUpdate,
+                postLateUpdateLoop: timerPostLateUpdate
             );
 
             PlayerLoop.SetPlayerLoop(currentPlayerLoop);
@@ -67,7 +66,7 @@ namespace DVG.StateMachine
 #endif
         }
 
-        private static void InsertSystems(ref PlayerLoopSystem rootSystem,
+		private static void InsertSystems(ref PlayerLoopSystem rootSystem,
             in PlayerLoopSystem earlyUpdateLoop,
             in PlayerLoopSystem fixedUpdateLoop,
             in PlayerLoopSystem updateLoop,
@@ -112,13 +111,19 @@ namespace DVG.StateMachine
         {
             if (playModeState == PlayModeStateChange.ExitingPlayMode)
             {
+				TimerUpdater.EarlyUpdate.Dispose();
+				TimerUpdater.FixedUpdate.Dispose();
+				TimerUpdater.UpdateRunner.Dispose();
+				TimerUpdater.PreLateUpdate.Dispose();
+				TimerUpdater.PostLateUpdate.Dispose();
+
                 var currentPlayerLoop = PlayerLoop.GetCurrentPlayerLoop();
                 
-                currentPlayerLoop.RemoveSystemFrom<EarlyUpdate>(typeof(StateRunnerEarlyUpdate));
-                currentPlayerLoop.RemoveSystemFrom<FixedUpdate>(typeof(StateRunnerFixedUpdate));
-                currentPlayerLoop.RemoveSystemFrom<Update>(typeof(StateRunnerUpdate));
-                currentPlayerLoop.RemoveSystemFrom<PreLateUpdate>(typeof(StateRunnerPreLateUpdate));
-                currentPlayerLoop.RemoveSystemFrom<PostLateUpdate>(typeof(StateRunnerPostLateUpdate));
+                currentPlayerLoop.RemoveSystemFrom<EarlyUpdate>(typeof(TimerEarlyUpdate));
+                currentPlayerLoop.RemoveSystemFrom<FixedUpdate>(typeof(TimerFixedUpdate));
+                currentPlayerLoop.RemoveSystemFrom<Update>(typeof(TimerUpdate));
+                currentPlayerLoop.RemoveSystemFrom<PreLateUpdate>(typeof(TimerPreLateUpdate));
+                currentPlayerLoop.RemoveSystemFrom<PostLateUpdate>(typeof(TimerPostLateUpdate));
                 
                 PlayerLoop.SetPlayerLoop(currentPlayerLoop);
 
@@ -144,7 +149,7 @@ namespace DVG.StateMachine
                     if (subSystem.type == typeof(TLoop))
                     {
                         subSystem.subSystemList = subSystem.subSystemList?
-                            .Where(s => s.type != systemToRemove)
+                            .Where(loopSystem => loopSystem.type != systemToRemove)
                             .ToArray();
                     }
 
@@ -155,5 +160,11 @@ namespace DVG.StateMachine
             }
         }
 #endif
-    }
+
+		private struct TimerEarlyUpdate{}
+		private struct TimerFixedUpdate{}
+		private struct TimerUpdate{}
+		private struct TimerPreLateUpdate{}
+		private struct TimerPostLateUpdate{}
+	}
 }

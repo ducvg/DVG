@@ -15,7 +15,6 @@ namespace DVG.StateMachine
         {
             if(Owner == owner) return;
             Owner = owner;
-            //incase forgot stateMachine.Dispose()
             //must manually call Dispose() if not set owner
             _destroyCtRegistration = Owner.destroyCancellationToken.Register(Dispose); 
         }
@@ -36,7 +35,6 @@ namespace DVG.StateMachine
             
             _currentState = newState;
             
-            
             _currentState.OnEnter(Owner);
             StateManager.Register(_currentState);
         }
@@ -52,7 +50,7 @@ namespace DVG.StateMachine
             _currentState = null;
         }
 
-        public virtual void Dispose() //must manully call this if not set onwer
+        public void Dispose() //must manully call this if not set onwer
         {
             ClearState();
             _destroyCtRegistration.Dispose();

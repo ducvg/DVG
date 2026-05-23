@@ -7,7 +7,7 @@ using System.Collections.Generic;
 
 namespace DVG.UI.Editor
 {
-    [CustomPropertyDrawer(typeof(ITimeout), true)]
+    [CustomPropertyDrawer(typeof(Timeout), true)]
     public class TimeoutDrawer : PropertyDrawer
     {
         static readonly Type[] _types;
@@ -23,7 +23,7 @@ namespace DVG.UI.Editor
                     catch { return Type.EmptyTypes; }
                 })
                 .Where(t =>
-                    typeof(ITimeout).IsAssignableFrom(t) &&
+                    typeof(Timeout).IsAssignableFrom(t) &&
                     !t.IsAbstract &&
                     !t.IsInterface &&
                     !t.IsGenericType)
