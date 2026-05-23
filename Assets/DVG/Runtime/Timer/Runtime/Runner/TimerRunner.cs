@@ -59,7 +59,7 @@ namespace DVG.Timers
 							timerManagedData.OnStop();
 							break;
 						case TimerStatus.NewLoop:
-							timerManagedData.OnLoopComplete(timerDataPtr->CompletedLoops, timerDataPtr->ElapsedTime);
+							timerManagedData.OnLoopComplete(timerDataPtr->CompletedLoops, timerDataPtr->ElapsedTime, timerDataPtr->CycleElapsedTime);
 							timerDataPtr->Status = TimerStatus.Running;
 							break;
 					}
@@ -103,7 +103,15 @@ namespace DVG.Timers
 					uint prevTickCount = (uint)(prevElapsed * invTickRate);
 					uint newTickCount = (uint)(newElapsedTime * invTickRate);
 
-					if(Hint.Likely(newTickCount == prevTickCount)) return; 
+					if(Hint.Likely(newTickCount == prevTickCount))
+					{
+						timerDataPtr->Status = TimerStatus.AccumulateTick;
+						return;
+					}
+					else
+					{
+						timerDataPtr->Status = TimerStatus.Running;
+					}
 				}
 
 				timerDataPtr->ElapsedTime = newElapsedTime;

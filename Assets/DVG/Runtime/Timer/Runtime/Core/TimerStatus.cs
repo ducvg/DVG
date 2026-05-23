@@ -5,6 +5,8 @@ namespace DVG.Timers
 		Created, //wait for run()
 		Preserved,
 
+		AccumulateTick,
+
 		Running,
 		Paused,
 		Stopped,

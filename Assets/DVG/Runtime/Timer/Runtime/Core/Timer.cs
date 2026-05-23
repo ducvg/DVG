@@ -32,6 +32,36 @@ namespace DVG.Timers
 			get => DataStorage.GetDataRef(this).CycleElapsedTime;
 		}
 
+		public bool IsRunning
+		{
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			get
+			{
+				TimerData data = DataStorage.GetDataRef(this);
+				return data.Status == TimerStatus.Running || data.Status == TimerStatus.NewLoop;
+			}
+		}
+
+		public bool IsComplete
+		{
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			get
+			{
+				TimerData data = DataStorage.GetDataRef(this);
+				return data.Status == TimerStatus.Finished;
+			}
+		}
+
+		public bool IsPaused
+		{
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			get
+			{
+				TimerData data = DataStorage.GetDataRef(this);
+				return data.Status == TimerStatus.Paused;
+			}
+		}
+
         internal readonly int Version;
         internal readonly int DataSparseIndex;
         internal readonly TimerDataStorage DataStorage;
@@ -51,13 +81,13 @@ namespace DVG.Timers
 
 			switch(data.Status)
 			{
-				case TimerStatus.Running:
-					return;
 				case TimerStatus.Paused:
 					data.Status = TimerStatus.Running;
 					managedData.OnContinue(data.ElapsedTime);
 					return;
 				case TimerStatus.Stopped:
+					data.Status = TimerStatus.Running;
+					return;
 				case TimerStatus.Created:
 					data.Status = TimerStatus.Running;
 					managedData.OnStart();
@@ -180,30 +210,30 @@ namespace DVG.Timers
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		internal void OnTick(float _totalElapsedTime)
+		internal void OnTick(float totalElapsedTime)
 		{
 			if(OnTickAction == null) return;
 
 			if(TickActionContext != null)
 			{
-				Unsafe.As<Action<object, float>>(OnTickAction).Invoke(TickActionContext, _totalElapsedTime);
+				Unsafe.As<Action<object, float>>(OnTickAction).Invoke(TickActionContext, totalElapsedTime);
 			} else
 			{
-				Unsafe.As<Action<float>>(OnTickAction).Invoke(_totalElapsedTime);
+				Unsafe.As<Action<float>>(OnTickAction).Invoke(totalElapsedTime);
 			}
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		internal void OnLoopComplete(int _completedLoops, float _totalElapsedTime)
+		internal void OnLoopComplete(int completedLoops, float totalElapsedTime, float cycleElapsedTime)
 		{
 			if(OnLoopCompleteAction == null) return;
 
 			if(LoopCompleteActionContext != null)
 			{
-				Unsafe.As<Action<object, int, float>>(OnLoopCompleteAction).Invoke(LoopCompleteActionContext, _completedLoops, _totalElapsedTime);
+				Unsafe.As<Action<object, int, float, float>>(OnLoopCompleteAction).Invoke(LoopCompleteActionContext, completedLoops, totalElapsedTime, cycleElapsedTime);
 			} else
 			{
-				Unsafe.As<Action<int, float>>(OnLoopCompleteAction).Invoke(_completedLoops, _totalElapsedTime);
+				Unsafe.As<Action<int, float, float>>(OnLoopCompleteAction).Invoke(completedLoops, totalElapsedTime, cycleElapsedTime);
 			}
 		}
 
