@@ -52,12 +52,14 @@ namespace DVG.StateMachine
 
             StateManager.SetRunners(earlyUpdateRunner, fixedUpdateRunner, updateRunner, preLateUpdateRunner, postLateUpdateRunner);
 
-            currentPlayerLoop.InsertSystemAt<EarlyUpdate>(earlyUpdateLoop, insertIndex: 0);
-            currentPlayerLoop.InsertSystemAt<FixedUpdate>(fixedUpdateLoop, insertIndex: 0);
-            currentPlayerLoop.InsertSystemAt<Update>(updateLoop, insertIndex: 0);
-            currentPlayerLoop.InsertSystemAt<PreLateUpdate>(preLateUpdateLoop, insertIndex: 0); //monobehaviour lateupdate() is inside PreLateUpdate
-            currentPlayerLoop.InsertSystemAt<PostLateUpdate>(postLateUpdateLoop, insertIndex: 0);
-            
+            InsertSystems(ref currentPlayerLoop,
+                earlyUpdateLoop: earlyUpdateLoop,
+                fixedUpdateLoop: fixedUpdateLoop,
+                updateLoop: updateLoop,
+                preLateUpdateLoop: preLateUpdateLoop,
+                postLateUpdateLoop: postLateUpdateLoop
+            );
+
             PlayerLoop.SetPlayerLoop(currentPlayerLoop);
             
 #if UNITY_EDITOR
@@ -65,31 +67,43 @@ namespace DVG.StateMachine
 #endif
         }
 
-        private static void InsertSystemAt<TLoop>(this ref PlayerLoopSystem rootSystem, in PlayerLoopSystem newSystem, int insertIndex)
+        private static void InsertSystems(ref PlayerLoopSystem rootSystem,
+            in PlayerLoopSystem earlyUpdateLoop,
+            in PlayerLoopSystem fixedUpdateLoop,
+            in PlayerLoopSystem updateLoop,
+            in PlayerLoopSystem preLateUpdateLoop,
+            in PlayerLoopSystem postLateUpdateLoop)
         {
-            PlayerLoopSystem[] rootSubSystems = rootSystem.subSystemList;
+            const int insertIndex = 0;
+            
+            Span<PlayerLoopSystem> rootSpan = rootSystem.subSystemList;
 
-            if (rootSubSystems != null)
+            for (int i = 0; i < rootSpan.Length; i++)
             {
-                int subSystemCount = rootSubSystems.Length;
-                List<PlayerLoopSystem> newSubSystemList = new(subSystemCount + 1);
+                ref PlayerLoopSystem subSystem = ref rootSpan[i];
 
-                Span<PlayerLoopSystem> allSubSystemsSpan = rootSubSystems.AsSpan();
-                
-                for (int i = 0; i < subSystemCount; ++i)
-                {
-                    PlayerLoopSystem subSystem = allSubSystemsSpan[i];
-                    
-                    if (subSystem.type == typeof(TLoop))
-                    {
-                        var tempList = subSystem.subSystemList.ToList();
-                        tempList.Insert(insertIndex, newSystem);
-                        subSystem.subSystemList = tempList.ToArray();
-                    }
-                    newSubSystemList.Add(subSystem);
-                }
+                PlayerLoopSystem insertSystem;
 
-                rootSystem.subSystemList = newSubSystemList.ToArray();
+                Type type = subSystem.type;
+
+                if (type == typeof(EarlyUpdate)) insertSystem = earlyUpdateLoop;
+                else if (type == typeof(FixedUpdate)) insertSystem = fixedUpdateLoop;
+                else if (type == typeof(Update)) insertSystem = updateLoop;
+                else if (type == typeof(PreLateUpdate)) insertSystem = preLateUpdateLoop;
+                else if (type == typeof(PostLateUpdate)) insertSystem = postLateUpdateLoop;
+                else continue;
+
+                PlayerLoopSystem[] oldList = subSystem.subSystemList;
+
+                int oldLength = oldList?.Length ?? 0;
+
+                PlayerLoopSystem[] newList = new PlayerLoopSystem[oldLength + 1];
+
+                newList[insertIndex] = insertSystem;
+
+                if (oldLength > 0) Array.Copy(oldList, 0, newList, insertIndex + 1, oldLength);
+
+                subSystem.subSystemList = newList;
             }
         }
 

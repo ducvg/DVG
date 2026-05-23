@@ -15,17 +15,6 @@ namespace DVG.StateMachine
 #endif        
         public static void Initialize()
         {
-
-#if UNITY_EDITOR && UNITY_2019_3_OR_NEWER
-            // When domain reload is disabled, re-initialization is required when entering play mode; 
-            // otherwise, pending tasks will leak between play mode sessions.
-            var domainReloadDisabled = UnityEditor.EditorSettings.enterPlayModeOptionsEnabled &&
-                                       UnityEditor.EditorSettings.enterPlayModeOptions.HasFlag(UnityEditor.EnterPlayModeOptions.DisableDomainReload);
-            if (!domainReloadDisabled && Runners.Length > 0) return;
-#else
-            if (Runners.Length > 0) return; // already initialized
-#endif
-            
             RunnerBootstrapper.Initialize();
         }
 
