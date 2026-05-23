@@ -32,13 +32,13 @@ public sealed class Player : MonoBehaviour
     }
 }
 ```
-The state machine, must implement StateMachine<Owner> with owner is who using the state machine. This serve 2 purposes: cache the states and serialize the states on inspector.
+The state machine, must implement StateMachine&lt;Owner&gt;. This serve 2 purposes: cache the states and serialize the states on inspector.
 ```csharp
 [Serializable]
 public sealed class PlayerMovementStateMachine : StateMachine<Player>
 {
+    [field: SerializeField] public PlayerWalkState WalkState { get; private set; }
     public readonly PlayerIdleState IdleState = new();
-    [field: SerializeField] public readonly PlayerWalkState WalkState { get; private set; }
 }
 ```
 The state, must implement IState<Owner> with owner is who using the state machine.<br>
@@ -55,7 +55,7 @@ public sealed class PlayerIdleState : IState<Player>, IEarlyUpdate, IUpdate, ILa
     public void LateUpdate() => Debug.Log($"{GetType().Name} LateUpdate");
 }
 
-[System.Serializable]
+[Serializable]
 public sealed class PlayerWalkState : IState<Player>, IUpdate, IFixedUpdate
 {
     [SerializeField] private ParticleSystem _trailParticle;
