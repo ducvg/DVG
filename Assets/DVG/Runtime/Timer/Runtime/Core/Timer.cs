@@ -129,9 +129,10 @@ namespace DVG.Timers
 			}
 		}
 
-		public void ResetTime()
+		public void Reset()
 		{
 			ref TimerData data = ref DataStorage.GetDataRef(this);
+			data.Status = TimerStatus.Created;
 			data.ElapsedTime = 0;
 			data.CycleElapsedTime = 0;
 			data.CompletedLoops = 0;
