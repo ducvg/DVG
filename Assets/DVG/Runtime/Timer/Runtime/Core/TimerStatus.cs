@@ -5,12 +5,9 @@ namespace DVG.Timers
 		Created, //wait for run()
 		Preserved,
 
-		ProgressTick,
-
 		Running,
 		Paused,
-		Stopped,
-		Finished,
+		Completed,
 
 		NewLoop,
 		

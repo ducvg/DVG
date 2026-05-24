@@ -48,7 +48,7 @@ namespace DVG.Timers
 			get
 			{
 				TimerData data = DataStorage.GetDataRef(this);
-				return data.Status == TimerStatus.Finished;
+				return data.ElapsedTime >= data.Duration * (data.Loops + 1);
 			}
 		}
 
@@ -70,16 +70,13 @@ namespace DVG.Timers
 
 			switch(data.Status)
 			{
-				case TimerStatus.Paused:
-					data.Status = TimerStatus.Running;
-					managedData.OnContinue(data.ElapsedTime);
-					return;
-				case TimerStatus.Stopped:
-					data.Status = TimerStatus.Running;
-					return;
 				case TimerStatus.Created:
 					data.Status = TimerStatus.Running;
 					managedData.OnStart();
+					return;
+				case TimerStatus.Paused:
+					data.Status = TimerStatus.Running;
+					managedData.OnContinue(data.ElapsedTime);
 					return;
 			}
 		}
@@ -90,31 +87,24 @@ namespace DVG.Timers
 			ref TimerData data = ref DataStorage.GetDataRef(this);
 			ref TimerManagedData managedData = ref DataStorage.GetManagedDataRef(this);
 
-			if(data.Status == TimerStatus.Running)
+			if(data.Status is TimerStatus.Running or TimerStatus.Created or TimerStatus.NewLoop)
 			{
 				data.Status = TimerStatus.Paused;
 				managedData.OnPause(data.ElapsedTime);
 			}
 		}
 
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public void Stop()
-		{
-			ref TimerData data = ref DataStorage.GetDataRef(this);
-
-			if(data.Status is TimerStatus.Running or TimerStatus.Paused or TimerStatus.NewLoop)
-			{
-				data.Status = TimerStatus.Stopped;
-			}
-		}
-	
 		public void Complete()
 		{
 			ref TimerData data = ref DataStorage.GetDataRef(this);
+			ref TimerManagedData managedData = ref DataStorage.GetManagedDataRef(this);
 
-			if(data.Status is TimerStatus.Running or TimerStatus.Paused or TimerStatus.NewLoop)
+			if(data.Status is TimerStatus.Created or TimerStatus.Running or TimerStatus.Paused or TimerStatus.NewLoop)
 			{
-				data.Status = TimerStatus.Finished;
+				data.ElapsedTime = Duration * (Loops + 1);
+				data.TickProgress = data.TickRateSeconds;
+				data.Status = TimerStatus.Completed;
+				managedData.OnComplete();
 			}
 		}
 
@@ -129,6 +119,19 @@ namespace DVG.Timers
 		{
 			ref TimerData data = ref DataStorage.GetDataRef(this);
 			data.Status = TimerStatus.Created;
+			data.Duration = newDuration;
+			data.ElapsedTime = 0;
+		}
+
+		public void ResetTime()
+		{
+			ref TimerData data = ref DataStorage.GetDataRef(this);
+			data.ElapsedTime = 0;
+		}
+
+		public void ResetTime(float newDuration)
+		{
+			ref TimerData data = ref DataStorage.GetDataRef(this);
 			data.Duration = newDuration;
 			data.ElapsedTime = 0;
 		}

@@ -34,43 +34,38 @@ namespace DVG.Timers
 				var managedDataSpan = DataStorage.GetManagedDataSpan();
                 for (int i = 0; i < count; ++i)
 				{
-					TimerData* timerDataPtr = dataPtr + i;
+					ref TimerData timerData = ref *(dataPtr + i);
 					var timerManagedData = managedDataSpan[i];
 
-					if(timerManagedData.lifeLinkedCancellationToken.IsCancellationRequested)
+					if(timerManagedData.bindOwnerCancellationToken.IsCancellationRequested)
 					{
-						timerDataPtr->Status = TimerStatus.Stopped;
-						timerManagedData.OnStop();
-						stopTimerIndexs.AddNoResize(i);
+						timerData.Status = TimerStatus.Disposed;
 						continue;
 					}
 
-					switch (timerDataPtr->Status)
+					switch (timerData.Status)
 					{
 						case TimerStatus.Running:
-							timerManagedData.OnTick(timerDataPtr->ElapsedTime);
-							break;
-						case TimerStatus.Finished:
-							timerManagedData.OnComplete();
-							break;
-						case TimerStatus.Stopped:
-							timerManagedData.OnStop();
-							break;
+							timerManagedData.OnTick(timerData.ElapsedTime);
+							continue;
+						case TimerStatus.Completed:
+							if(timerData.PrevStatus != TimerStatus.Completed) timerManagedData.OnComplete();
+							continue;
 						case TimerStatus.NewLoop:
-							timerManagedData.OnLoopComplete(timerDataPtr->CompletedLoops, timerDataPtr->ElapsedTime, timerDataPtr->LoopElapsedTime);
-							timerDataPtr->Status = TimerStatus.Running;
-							break;
+							timerManagedData.OnTick(timerData.ElapsedTime);
+							timerManagedData.OnLoopComplete(timerData.CompletedLoops, timerData.ElapsedTime, timerData.LoopElapsedTime);
+							timerData.Status = TimerStatus.Running;
+							continue;
 						case TimerStatus.Preserved:
-							switch(timerDataPtr->PrevStatus)
+							if(timerData.PrevStatus is TimerStatus.Completed)
 							{
-								case TimerStatus.Finished:
-									timerManagedData.OnComplete();
-									break;
-								case TimerStatus.Stopped:
-									timerManagedData.OnStop();
-									break;
+								timerManagedData.OnComplete();
+								timerData.PrevStatus = TimerStatus.Disposed;
 							}
-							break;
+							continue;
+						case TimerStatus.Disposed:
+							timerManagedData.OnDisposed();
+							continue;
 					}
 				}
 			}
@@ -92,80 +87,72 @@ namespace DVG.Timers
             public void Execute([AssumeRange(0, int.MaxValue)] int dataIndex)
             {
 				var timerDataPtr = DataArrayPtr + dataIndex;
-				if(timerDataPtr->Status == TimerStatus.Disposed)
+				ref TimerData timerData = ref *timerDataPtr;
+				
+				float deltaTime = timerData.Timing == TimerTiming.ScaleTime ? ScaledDeltaTime : UnscaledDeltaTime;
+				float timerTickRate = timerData.TickRateSeconds;
+
+				if(Hint.Unlikely(timerData.Status == TimerStatus.Disposed))
 				{
 					RemoveTimerIndexs.AddNoResize(dataIndex);
 					return;
 				}
-				if(timerDataPtr->Status is TimerStatus.Created or TimerStatus.Paused 
-				or TimerStatus.Preserved or TimerStatus.Stopped) return;
-
-				float deltaTime = timerDataPtr->Timing == TimerTiming.ScaleTime ? ScaledDeltaTime : UnscaledDeltaTime;
-				float timerDuration = timerDataPtr->Duration;
-				float tickRateSeconds = timerDataPtr->TickRateSeconds;
-				bool isPreserverd = timerDataPtr->IsPreserved;
-
-				if(Hint.Unlikely(timerDuration <= 0))
+				if(Hint.Unlikely(timerData.Status == TimerStatus.Completed))
 				{
-					timerDataPtr->ElapsedTime = timerDuration * (timerDataPtr->Loops+1);
-					if(isPreserverd)
-					{
-						timerDataPtr->PrevStatus = TimerStatus.Finished;
-						timerDataPtr->Status = TimerStatus.Preserved;
-					} 
-					else
-					{
-						timerDataPtr->Status = TimerStatus.Finished;
-						RemoveTimerIndexs.AddNoResize(dataIndex);
-					}
+					timerData.PrevStatus = TimerStatus.Completed;
+					HandleCompleteTimer(ref timerData, dataIndex);
+					return;
+				}
+				if(timerData.Status is TimerStatus.Created or TimerStatus.Paused or TimerStatus.Preserved) return;
+
+				if(Hint.Unlikely(timerData.Duration <= 0))
+				{
+					HandleCompleteTimer(ref timerData, dataIndex);
 					return;
 				}
 
-				if(tickRateSeconds > math.EPSILON)
+				//custom tick rate handle
+				if(timerTickRate > math.EPSILON)
 				{
-					timerDataPtr->TickProgress += deltaTime;
-
-					if(Hint.Likely(timerDataPtr->TickProgress < tickRateSeconds))
-					{
-						timerDataPtr->Status = TimerStatus.ProgressTick;
-						return;
-					}
-					else
-					{
-						timerDataPtr->TickProgress = timerDataPtr->TickProgress % tickRateSeconds;
-						timerDataPtr->Status = TimerStatus.Running;
-					}
+					timerData.TickProgress += deltaTime;
+					if(Hint.Likely(timerData.TickProgress < timerTickRate)) return;
+					timerData.TickProgress = timerData.TickProgress % timerTickRate;
 				}
 				else
 				{
-					tickRateSeconds = deltaTime;
+					timerTickRate = deltaTime;
 				}
 
-				int prevLoop = (int)(timerDataPtr->ElapsedTime / timerDuration + math.EPSILON);
-				timerDataPtr->ElapsedTime += tickRateSeconds;
-				int curLoop = (int)(timerDataPtr->ElapsedTime / timerDuration  + math.EPSILON);
-				float newElapsedTime = timerDataPtr->ElapsedTime;
+				//loop handle
+				int prevLoop = timerData.CompletedLoops;
+				timerData.ElapsedTime += timerTickRate;
+				int curLoop = timerData.CompletedLoops;
 				            
-				if(Hint.Unlikely(prevLoop < curLoop)) //complete duration
+				if(Hint.Unlikely(prevLoop < curLoop))
 				{
-					float loopCount = timerDataPtr->Loops;
-					if(Hint.Unlikely(timerDataPtr->CompletedLoops > loopCount))
+					if(timerData.CompletedLoops > timerData.Loops)
 					{
-						timerDataPtr->ElapsedTime = timerDuration * (loopCount+1);
-						if(isPreserverd)
-						{
-							timerDataPtr->PrevStatus = TimerStatus.Finished;
-							timerDataPtr->Status = TimerStatus.Preserved;
-						} 
-						else
-						{
-							timerDataPtr->Status = TimerStatus.Finished;
-							RemoveTimerIndexs.AddNoResize(dataIndex);
-						}
+						HandleCompleteTimer(ref timerData, dataIndex);
 						return;
 					}
+					timerData.Status = TimerStatus.NewLoop;
+					return;
+				}
+			}
 
-					timerDataPtr->Status = TimerStatus.NewLoop;
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			private void HandleCompleteTimer(ref TimerData timerData, int dataIndex)
+			{
+				timerData.ElapsedTime = math.max(0, timerData.Duration * (timerData.Loops + 1));
+				if(timerData.IsPreserved)
+				{
+					timerData.PrevStatus = TimerStatus.Completed;
+					timerData.Status = TimerStatus.Preserved;
+				} 
+				else
+				{
+					timerData.Status = TimerStatus.Completed;
+					RemoveTimerIndexs.AddNoResize(dataIndex);
 				}
 			}
         }

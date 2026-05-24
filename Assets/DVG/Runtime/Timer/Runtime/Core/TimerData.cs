@@ -7,30 +7,32 @@ namespace DVG.Timers
 {
 	internal struct TimerData
     {
-        public TimerStatus Status;
 		public TimerStatus PrevStatus;
+        public TimerStatus Status;
         public TimerTiming Timing;
 		
 		public bool IsPreserved;
+
         public int Loops;
-		public int CompletedLoops => Duration > 0f ? (int)(ElapsedTime / Duration) : 0;
+		public int CompletedLoops => Duration > 0f ? (int)(ElapsedTime / Duration + math.EPSILON) : 0;
 
         public float Duration;
         public float ElapsedTime;
-		public float LoopElapsedTime => Status == TimerStatus.Finished ? Duration : ElapsedTime % Duration;
+		public float LoopElapsedTime => Status == TimerStatus.Completed ? Duration : ElapsedTime % Duration;
         public float TickRateSeconds;
 		public float TickProgress;
     }
 
 	internal struct TimerManagedData
     {
-		internal CancellationToken lifeLinkedCancellationToken;
+		internal CancellationToken bindOwnerCancellationToken;
 
-        internal object StartActionContext, TickActionContext, StopActionContext, CompleteActionContext;
-        internal object OnStartAction, OnTickAction, OnStopAction, OnCompleteAction;
+        internal object StartActionContext, TickActionContext, CompleteActionContext;
+        internal object OnStartAction, OnTickAction, OnCompleteAction;
 		internal object PauseActionContext, ContinueActionContext;
 		internal object OnPauseAction, OnContinueAction;
 		internal object LoopCompleteActionContext, OnLoopCompleteAction;
+		internal object DisposeActionContext, OnDisposeAction;
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		internal void OnStart()
@@ -103,16 +105,16 @@ namespace DVG.Timers
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		internal void OnStop()
+		internal void OnDisposed()
 		{
-			if(OnStopAction == null) return;
+			if(OnDisposeAction == null) return;
 
-			if(StopActionContext != null)
+			if(DisposeActionContext != null)
 			{
-				Unsafe.As<Action<object>>(OnStopAction).Invoke(StopActionContext);
+				Unsafe.As<Action<object>>(OnDisposeAction).Invoke(DisposeActionContext);
 			} else
 			{
-				Unsafe.As<Action>(OnStopAction).Invoke();
+				Unsafe.As<Action>(OnDisposeAction).Invoke();
 			}
 		}
 

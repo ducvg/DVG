@@ -46,25 +46,6 @@ namespace DVG.Timers
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static Timer OnStop(this Timer timer, Action onStopAction)
-		{
-			ref var managedData = ref timer.DataStorage.GetManagedDataRef(timer);
-			managedData.StopActionContext = null;
-			managedData.OnStopAction = onStopAction;
-			return timer;
-		}
-
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static Timer OnStop<T>(this Timer timer, 
-			T context, Action<T> onStopAction)
-		{
-			ref var managedData = ref timer.DataStorage.GetManagedDataRef(timer);
-			managedData.StopActionContext = context;
-			managedData.OnStopAction = onStopAction;
-			return timer;
-		}
-
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static Timer OnLoopComplete(this Timer timer, 
 			Action<int, float, float> onLoopCompleteAction)
 		{
@@ -142,10 +123,29 @@ namespace DVG.Timers
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static Timer OnDispose(this Timer timer, Action onStopAction)
+		{
+			ref var managedData = ref timer.DataStorage.GetManagedDataRef(timer);
+			managedData.DisposeActionContext = null;
+			managedData.OnDisposeAction = onStopAction;
+			return timer;
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static Timer OnDispose<T>(this Timer timer, 
+			T context, Action<T> onStopAction)
+		{
+			ref var managedData = ref timer.DataStorage.GetManagedDataRef(timer);
+			managedData.DisposeActionContext = context;
+			managedData.OnDisposeAction = onStopAction;
+			return timer;
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static Timer BindTo(this Timer timer, MonoBehaviour owner)
 		{
 			ref var managedData = ref timer.DataStorage.GetManagedDataRef(timer);
-			managedData.lifeLinkedCancellationToken = owner.destroyCancellationToken;
+			managedData.bindOwnerCancellationToken = owner.destroyCancellationToken;
 			return timer;
 		}
 	}
