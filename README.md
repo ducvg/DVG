@@ -3,10 +3,10 @@ Some systems that i aim for the least abstraction and voodoo magic, each system 
 These also aim for minimal uses of monobehaviours/components and no enum switches.
 
 # Install
-Add Git package URL: https://github.com/ducvg/DVG.git?path=Assets/DVG<br>
+https://github.com/ducvg/DVG.git?path=Assets/DVG<br>
 Note: This will auto install all [included packages](#Included) below, individual package on it's section.<br>
 Dependency: UniTask, LitMotion<br>
-Odin inspector will override custom editor<br>
+Odin inspector will override custom editor if installed<br>
 
 # Module
 - [Timer](#Timer)
