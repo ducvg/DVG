@@ -11,12 +11,14 @@ namespace DVG.UI
 		
 		public override void Setup(BaseCanvas owner)
 		{
-			_timer = Timer.Create(timeoutDuration).OnStop(owner, OnTimeout).BindTo(owner);
+			_timer = Timer.Create(timeoutDuration).BindTo(owner)
+						.OnComplete(owner, OnTimeout);
 		}
 
 		public override void OnOpen()
 		{
-			_timer.Stop();
+			_timer.Pause();
+			_timer.ResetTime();
 		}
 
 		public override void OnClose()
@@ -24,7 +26,7 @@ namespace DVG.UI
 			_timer.Run();
 		}
 
-		private void OnTimeout(BaseCanvas owner)
+		private static void OnTimeout(BaseCanvas owner)
 		{
 			Object.Destroy(owner);
 		}
