@@ -17,6 +17,10 @@ Odin inspector will override custom editor<br>
 
 # Timer
 https://github.com/ducvg/DVG.git?path=Assets/DVG/Runtime/Timer
+##### Dependency (auto installed)
+- Burst 1.8.29 or later
+- Collection 2.6.5 or later
+- Mathematics 1.3.3 or later
 #### Features
  - No allocation with struct based design.
  - Utilizing unity DOTS for performance.
@@ -198,9 +202,11 @@ then assign the new voice audio controller on the audioManager inspector normall
 
 # UI
 Git package URL: https://github.com/ducvg/DVG.git?path=Assets/DVG/Runtime/UI<br>
-Add UIManager on a gameObject, this is a DontDestroyOnLoad Singleton wrap around all UI Canvases. Every canvas inherit from class BaseCanvas. <br>
-**All Canvas needs to be prefab assigned on UIManager inspector** 
-
+##### Dependency (auto installed)
+- Litmotion
+- UniTask
+- [Timer](#Timer)
+<br>**All Canvas needs to be prefab assigned on UIManager inspector** 
 ### Transtion
 Canvas may or may not have open/close transition, to add transition: select the desired transitions on the canvas's obj inspector<br>
 **4 transitions included: Move, Fade, Rotate, Scale.**<br>
