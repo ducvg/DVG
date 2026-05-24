@@ -87,6 +87,115 @@ public class Character: MonoBehaviour
 	- `.OnStop()`: invoked when `.BindTo()` gameobject is destroyed, or by `.Stop()`
 	- `.OnLoopComplete(int loop, float totalElapsedTime, float cycleElapseTime)`: invoke when a loop complete.
 
+# State Machine
+https://github.com/ducvg/DVG.git?path=Assets/DVG/Runtime/State%20Machine<br>
+#### Feature
+ - Supported updates: EarlyUpdate, FixedUpdate, Update, LateUpdate(PreLateUpdate in internal loop)
+ - Implement interface with according updates: IUpdate, IFixedUpdate, ...
+ - State updates follows the unity event order: https://docs.unity3d.com/6000.3/Documentation/Manual/execution-order.html
+ - **Updates's behaviour will run before monobehaviour scripts update's behaviour (state updates before monobehaviour update)**, shouldnt be a problem tho
+#### Example Usage
+The owner, the one using the state machine(s):
+```csharp
+public sealed class Player : MonoBehaviour
+{
+    [field: SerializeField] public PlayerMovementStateMachine MovementStateMachine  { get; private set; }
+    //public PlayerAttackStateMachine AttackStateMachine  { get; private set; }
+
+    private void Awake()
+    {
+        MovementStateMachine.SetOwner(this); //call once
+    }
+
+    private void Update()
+    {
+        if(Input.GetKeyDown(KeyCode.Q))
+        {
+            MovementStateMachine.ChangeState(MovementStateMachine.IdleState);
+        }
+        if(Input.GetKeyDown(KeyCode.W))
+        {
+            MovementStateMachine.ChangeState(MovementStateMachine.WalkState);
+        }
+    }
+}
+```
+The state machine, must implement StateMachine&lt;Owner&gt;. This serve 2 purposes: cache the states and serialize the states on inspector.
+```csharp
+[Serializable]
+public sealed class PlayerMovementStateMachine : StateMachine<Player>
+{
+    [field: SerializeField] public PlayerWalkState WalkState { get; private set; }
+    public readonly PlayerIdleState IdleState = new();
+}
+```
+The state, must implement IState<Owner> with owner is who using the state machine.<br>
+To have updates within unity internal loops, implement the corresponding interfaces or none if not needed.
+```csharp
+public sealed class PlayerIdleState : IState<Player>, IEarlyUpdate, IUpdate, ILateUpdate, IFixedUpdate
+{
+    public void OnEnter(Player owner) => Debug.Log($"{GetType().Name} OnEnter");
+    public void OnExit(Player owner) => Debug.Log($"{GetType().Name} OnExit");
+    
+    public void EarlyUpdate() => Debug.Log($"{GetType().Name} EarlyUpdate");
+    public void FixedUpdate() => Debug.Log($"{GetType().Name} FixedUpdate");
+    public void Update() => Debug.Log($"{GetType().Name} Update");
+    public void LateUpdate() => Debug.Log($"{GetType().Name} LateUpdate");
+}
+
+[Serializable]
+public sealed class PlayerWalkState : IState<Player>, IUpdate, IFixedUpdate
+{
+    [SerializeField] private ParticleSystem _trailParticle;
+    public void OnEnter(Player owner)
+    {
+        if(_trailParticle != null) _trailParticle.Play();
+        Debug.Log($"{GetType().Name} OnEnter");
+    }
+
+    public void OnExit(Player owner)
+    {
+        if(_trailParticle != null) _trailParticle.Stop();
+        Debug.Log($"{GetType().Name} OnExit");
+    }
+
+    public void FixedUpdate() => Debug.Log($"{GetType().Name} FixedUpdate");
+    public void Update() => Debug.Log($"{GetType().Name} Update");
+}
+```
+
+# Audio
+Git package URL: https://github.com/ducvg/DVG.git?path=Assets/DVG/Runtime/Audio<br>
+Add AudioManager on a gameObject, this is a DontDestroyOnLoad Singleton wrap around audio controllers.<br>Every controller implement IAudioController, add custom controller by create class implement this then assign on AudioManager inspector. 2 controllers prepared: SfxAudio and BackgroundAudio
+To play a audio, call .Play on a controller and pass in an IAudioData. <br>
+
+#### AudioData included: 
+- SingleAudioData: play the audio clip asigned on the inspector.
+- RandomAudioData: play a random audio clip in the clip array on the inspector.
+- 
+#### Usage
+Get a controller and play the audio:
+```csharp
+[SerializeField] private SingleAudioData backgroundAudio; 
+[SerializeField] private RandomAudioData shootSfx; 
+...
+AudioManager.Get<SfxController>.Play(shootSfx);
+AudioManager.Get<BackgroundController>.Play(backgroundAudio);
+```
+Create a AudioData:
+```csharp
+[System.Serializable]
+public sealed class CustomData : IAudioData
+{...}
+```
+Create a AudioController:
+```csharp
+[System.Serializable]
+public sealed class VoiceAudio : IAudioController
+{...}
+```
+then assign the new voice audio controller on the audioManager inspector normally like others.
+
 # UI
 Git package URL: https://github.com/ducvg/DVG.git?path=Assets/DVG/Runtime/UI<br>
 Add UIManager on a gameObject, this is a DontDestroyOnLoad Singleton wrap around all UI Canvases. Every canvas inherit from class BaseCanvas. <br>
@@ -141,6 +250,7 @@ UIManager.UnloadCanvas<MinigameCanvas>(); //destroy the pooled canvas and releas
 //Create a canvas, save this as a prefab and drag on UI Manager, no addressable support atm
 public sealed class
 ```
+
 ### Pool, Timeout
 All canvas are pooled by default, it can be manually cleaned by Destroy(canvas.gameobject) with timeoutStrategy set as Null or be auto with a Timeout Strategy (only InactiveTimout is included atm)<br>
 Select a strategy to free up canvas that arent used frequently. The timer will tick (and destroy if finish) before script's Update() and reset time on open before any transition.<br>
@@ -169,116 +279,6 @@ public sealed class CustomTimeout : ITimeout
     }
 }
 ```
-
-# State Machine
-Git package URL: https://github.com/ducvg/DVG.git?path=Assets/DVG/Runtime/State%20Machine<br>
-Full serializable state machine, mark [Serializable] on any state machines or states that want to be serialized<br>
-#### State Update Behaviours
- - Supported updates: EarlyUpdate, FixedUpdate, Update, LateUpdate(PreLateUpdate in internal loop)
- - Implement interface with according updates: IUpdate, IFixedUpdate, ...
- - State updates follows the unity event order: https://docs.unity3d.com/6000.3/Documentation/Manual/execution-order.html
- - **Updates's behaviour will run before monobehaviour scripts update's behaviour (state updates before monobehaviour update)**, shouldnt be a problem tho
-#### Example Usage
-The owner, the one using the state machine(s):
-```csharp
-public sealed class Player : MonoBehaviour
-{
-    [field: SerializeField] public PlayerMovementStateMachine MovementStateMachine  { get; private set; }
-    //public PlayerAttackStateMachine AttackStateMachine  { get; private set; }
-
-    private void Awake()
-    {
-        MovementStateMachine.SetOwner(this); //call once
-    }
-
-    private void Update()
-    {
-        if(Input.GetKeyDown(KeyCode.Q))
-        {
-            MovementStateMachine.ChangeState(MovementStateMachine.IdleState);
-        }
-        if(Input.GetKeyDown(KeyCode.W))
-        {
-            MovementStateMachine.ChangeState(MovementStateMachine.WalkState);
-        }
-    }
-}
-```
-The state machine, must implement StateMachine<Owner> with owner is who using the state machine. This serve 2 purposes: cache the states and serialize the states on inspector.
-```csharp
-[Serializable]
-public sealed class PlayerMovementStateMachine : StateMachine<Player>
-{
-    public readonly PlayerIdleState IdleState = new();
-    [field: SerializeField] public PlayerWalkState WalkState { get; private set; }
-}
-```
-The state, must implement IState<Owner> with owner is who using the state machine.<br>
-To have updates within unity internal loops, implement the corresponding interfaces or none if not needed.
-```csharp
-public sealed class PlayerIdleState : IState<Player>, IEarlyUpdate, IUpdate, ILateUpdate, IFixedUpdate
-{
-    public void OnEnter(Player owner) => Debug.Log($"{GetType().Name} OnEnter");
-    public void OnExit(Player owner) => Debug.Log($"{GetType().Name} OnExit");
-    
-    public void EarlyUpdate() => Debug.Log($"{GetType().Name} EarlyUpdate");
-    public void FixedUpdate() => Debug.Log($"{GetType().Name} FixedUpdate");
-    public void Update() => Debug.Log($"{GetType().Name} Update");
-    public void LateUpdate() => Debug.Log($"{GetType().Name} LateUpdate");
-}
-
-[System.Serializable]
-public sealed class PlayerWalkState : IState<Player>, IUpdate, IFixedUpdate
-{
-    [SerializeField] private ParticleSystem _trailParticle;
-    public void OnEnter(Player owner)
-    {
-        if(_trailParticle != null) _trailParticle.Play();
-        Debug.Log($"{GetType().Name} OnEnter");
-    }
-
-    public void OnExit(Player owner)
-    {
-        if(_trailParticle != null) _trailParticle.Stop();
-        Debug.Log($"{GetType().Name} OnExit");
-    }
-
-    public void FixedUpdate() => Debug.Log($"{GetType().Name} FixedUpdate");
-    public void Update() => Debug.Log($"{GetType().Name} Update");
-}
-```
-
-# Audio
-Git package URL: https://github.com/ducvg/DVG.git?path=Assets/DVG/Runtime/Audio<br>
-Add AudioManager on a gameObject, this is a DontDestroyOnLoad Singleton wrap around audio controllers.<br>Every controller implement IAudioController, add custom controller by create class implement this then assign on AudioManager inspector. 2 controllers prepared: SfxAudio and BackgroundAudio
-To play a audio, call .Play on a controller and pass in an IAudioData. <br>
-
-#### AudioData included: 
-- SingleAudioData: play the audio clip asigned on the inspector.
-- RandomAudioData: play a random audio clip in the clip array on the inspector.
-- 
-#### Usage
-Get a controller and play the audio:
-```csharp
-[SerializeField] private SingleAudioData backgroundAudio; 
-[SerializeField] private RandomAudioData shootSfx; 
-...
-AudioManager.Get<SfxController>.Play(shootSfx);
-AudioManager.Get<BackgroundController>.Play(backgroundAudio);
-```
-Create a AudioData:
-```csharp
-[System.Serializable]
-public sealed class CustomData : IAudioData
-{...}
-```
-Create a AudioController:
-```csharp
-[System.Serializable]
-public sealed class VoiceAudio : IAudioController
-{...}
-```
-then assign the new voice audio controller on the audioManager inspector normally like others.
 
 # Pool
 Git package URL: https://github.com/ducvg/DVG.git?path=Assets/DVG/Runtime/Pool<br>
