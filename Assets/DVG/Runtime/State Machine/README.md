@@ -1,7 +1,6 @@
 # State Machine
 https://github.com/ducvg/DVG.git?path=Assets/DVG/Runtime/State%20Machine<br>
-Full serializable state machine, mark [Serializable] on any state machines or states that want to be serialized<br>
-#### State Update Behaviours
+#### Feature
  - Supported updates: EarlyUpdate, FixedUpdate, Update, LateUpdate(PreLateUpdate in internal loop)
  - Implement interface with according updates: IUpdate, IFixedUpdate, ...
  - State updates follows the unity event order: https://docs.unity3d.com/6000.3/Documentation/Manual/execution-order.html

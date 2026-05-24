@@ -4,16 +4,197 @@ These also aim for minimal uses of monobehaviours/components and no enum switche
 
 # Install
 Add Git package URL: https://github.com/ducvg/DVG.git?path=Assets/DVG<br>
-Note: This will auto install all [included packages](#Included) below, individual package links on it's section.<br>
+Note: This will auto install all [included packages](#Included) below, individual package on it's section.<br>
 Dependency: UniTask, LitMotion<br>
 Odin inspector will override custom editor<br>
 
-# Included
-- [UI](#UI)
+# Module
+- [Timer](#Timer)
 - [State Machine](#State-Machine)
 - [Audio](#Audio)
+- [UI](#UI)
 - [Pool](#Pool)
-- [Timer](#Timer)
+
+# Timer
+https://github.com/ducvg/DVG.git?path=Assets/DVG/Runtime/Timer
+#### Features
+ - No allocation with struct based design.
+ - Utilizing unity DOTS for performance.
+ - Hooked onto unity internal loops allows precise game timing.
+ - **Ticks will run before monobehaviour scripts update's (timer updates before monobehaviour update)**, shouldnt be a problem tho
+### Example
+```csharp
+public class Character: MonoBehaviour
+{
+	private float hp = 100;
+	Timer skillCooldownTimer;
+
+	void Start()
+	{
+		skillCooldownTimer = Timer.Create(10f, preserve: true).BindTo(this);
+	}
+
+	public void UseSkill()
+	{
+		if(skillCooldownTimer.IsRunning) return;
+		skillCooldownTimer.Run();
+	}
+
+	public void TakeDotDamage(float damagePerInstance, float duration, float tickInterval)
+	{
+		Timer.Create(duration, tickInterval).BindTo(this)
+			.OnTick(this, (character, elapsedTime) => character.hp -= damagePerInstance)
+			.Run();
+	}
+}
+```
+## API
+#### Settings
+- `TimerSetting` hold settings fields
+	- `JobBatchCount`: default 32, used for scheduling update timers job. Increase or decrease accordingly to usage.
+#### Create Timer
+- Start everything with `Timer.Create(duration)` to get a Timer instance.
+- `.Create` overload parameters:
+	- `float duration`: the duration of the timer.
+	- `float tickRateSeconds`: Time interval between OnTick callbacks and ElapsedTime changes.
+	- `int loops`: default 0, timer keep running until completed this amount of loops.
+	- `bool preserved`:defaut false, by default timer will be cleaned after it is Stopped or Finished, set to true will allow reuse.<br> **Will Leak if not use with .BindTo() or .Dispose()**
+	- `TimerTiming timing`: default scaled time. `TimerTiming.ScaledTime` or `.UnscaledTime`
+	- `TimerUpdater updater`: default Update. `TimerUpdater.EarlyUpdate`, `.FixedUpdate`, `.Update`,...
+ - `.BindTo(Monobehaviour)` is optional. It will bind the timer lifetime to a gameobject ensure no leak, destroy the binded gameobject will release the timer.
+#### Use Timer instance
+- Get info:
+  	- `.Duration` return timer duration
+  	- `.ElapsedTime` return timer total elapsed time, include loops.
+  	- `.Loops` return total loops count
+  	- `.CompletedLoops` return completed loops count
+  	- `.LoopElapsedTime` return current loop elapsed time
+  	- `.IsRunning`, `.IsComplete`, `.IsPaused`
+- Actions:
+	- `.Run()`: start the timer when its created or **Continue** the timer if its Paused.
+	- `.Pause()`: pause the timer when it is Running.
+	- `.Stop()`: stop the timer when it is Running or Paused. Retain timer's progress.
+	- `.Complete()`: complete the timer immdiately, including its progress.
+	- `.Reset()`: reset timer progress back to first creation with `.Create()`.
+ 	- `.Reset(float duration)` same as Reset() but with a new duration.
+#### Add Callback
+- Chain after a timer instance
+	- `.OnStart()`: invoked when the timer first started.
+	- `.OnTick(float elapsedTime)`: invoke after every update of the updater or every `tickRateSeconds`
+	- `.OnComplete()`: invoked when elapsed time reach duration, or `.Complete()`
+	- `.OnPause(float elapsedTime)`: invoked when call `.Pause()` on a running timer.
+	- `.OnContinue(float elapsedTime)`: invoked when call `.Run()` on a paused timer.
+	- `.OnStop()`: invoked when `.BindTo()` gameobject is destroyed, or by `.Stop()`
+	- `.OnLoopComplete(int loop, float totalElapsedTime, float cycleElapseTime)`: invoke when a loop complete.
+
+# State Machine
+https://github.com/ducvg/DVG.git?path=Assets/DVG/Runtime/State%20Machine<br>
+#### Feature
+ - Supported updates: EarlyUpdate, FixedUpdate, Update, LateUpdate(PreLateUpdate in internal loop)
+ - Implement interface with according updates: IUpdate, IFixedUpdate, ...
+ - State updates follows the unity event order: https://docs.unity3d.com/6000.3/Documentation/Manual/execution-order.html
+ - **Updates's behaviour will run before monobehaviour scripts update's behaviour (state updates before monobehaviour update)**, shouldnt be a problem tho
+#### Example Usage
+The owner, the one using the state machine(s):
+```csharp
+public sealed class Player : MonoBehaviour
+{
+    [field: SerializeField] public PlayerMovementStateMachine MovementStateMachine  { get; private set; }
+    //public PlayerAttackStateMachine AttackStateMachine  { get; private set; }
+
+    private void Awake()
+    {
+        MovementStateMachine.SetOwner(this); //call once
+    }
+
+    private void Update()
+    {
+        if(Input.GetKeyDown(KeyCode.Q))
+        {
+            MovementStateMachine.ChangeState(MovementStateMachine.IdleState);
+        }
+        if(Input.GetKeyDown(KeyCode.W))
+        {
+            MovementStateMachine.ChangeState(MovementStateMachine.WalkState);
+        }
+    }
+}
+```
+The state machine, must implement StateMachine&lt;Owner&gt;. This serve 2 purposes: cache the states and serialize the states on inspector.
+```csharp
+[Serializable]
+public sealed class PlayerMovementStateMachine : StateMachine<Player>
+{
+    [field: SerializeField] public PlayerWalkState WalkState { get; private set; }
+    public readonly PlayerIdleState IdleState = new();
+}
+```
+The state, must implement IState<Owner> with owner is who using the state machine.<br>
+To have updates within unity internal loops, implement the corresponding interfaces or none if not needed.
+```csharp
+public sealed class PlayerIdleState : IState<Player>, IEarlyUpdate, IUpdate, ILateUpdate, IFixedUpdate
+{
+    public void OnEnter(Player owner) => Debug.Log($"{GetType().Name} OnEnter");
+    public void OnExit(Player owner) => Debug.Log($"{GetType().Name} OnExit");
+    
+    public void EarlyUpdate() => Debug.Log($"{GetType().Name} EarlyUpdate");
+    public void FixedUpdate() => Debug.Log($"{GetType().Name} FixedUpdate");
+    public void Update() => Debug.Log($"{GetType().Name} Update");
+    public void LateUpdate() => Debug.Log($"{GetType().Name} LateUpdate");
+}
+
+[Serializable]
+public sealed class PlayerWalkState : IState<Player>, IUpdate, IFixedUpdate
+{
+    [SerializeField] private ParticleSystem _trailParticle;
+    public void OnEnter(Player owner)
+    {
+        if(_trailParticle != null) _trailParticle.Play();
+        Debug.Log($"{GetType().Name} OnEnter");
+    }
+
+    public void OnExit(Player owner)
+    {
+        if(_trailParticle != null) _trailParticle.Stop();
+        Debug.Log($"{GetType().Name} OnExit");
+    }
+
+    public void FixedUpdate() => Debug.Log($"{GetType().Name} FixedUpdate");
+    public void Update() => Debug.Log($"{GetType().Name} Update");
+}
+```
+
+# Audio
+Git package URL: https://github.com/ducvg/DVG.git?path=Assets/DVG/Runtime/Audio<br>
+Add AudioManager on a gameObject, this is a DontDestroyOnLoad Singleton wrap around audio controllers.<br>Every controller implement IAudioController, add custom controller by create class implement this then assign on AudioManager inspector. 2 controllers prepared: SfxAudio and BackgroundAudio
+To play a audio, call .Play on a controller and pass in an IAudioData. <br>
+
+#### AudioData included: 
+- SingleAudioData: play the audio clip asigned on the inspector.
+- RandomAudioData: play a random audio clip in the clip array on the inspector.
+- 
+#### Usage
+Get a controller and play the audio:
+```csharp
+[SerializeField] private SingleAudioData backgroundAudio; 
+[SerializeField] private RandomAudioData shootSfx; 
+...
+AudioManager.Get<SfxController>.Play(shootSfx);
+AudioManager.Get<BackgroundController>.Play(backgroundAudio);
+```
+Create a AudioData:
+```csharp
+[System.Serializable]
+public sealed class CustomData : IAudioData
+{...}
+```
+Create a AudioController:
+```csharp
+[System.Serializable]
+public sealed class VoiceAudio : IAudioController
+{...}
+```
+then assign the new voice audio controller on the audioManager inspector normally like others.
 
 # UI
 Git package URL: https://github.com/ducvg/DVG.git?path=Assets/DVG/Runtime/UI<br>
@@ -69,6 +250,7 @@ UIManager.UnloadCanvas<MinigameCanvas>(); //destroy the pooled canvas and releas
 //Create a canvas, save this as a prefab and drag on UI Manager, no addressable support atm
 public sealed class
 ```
+
 ### Pool, Timeout
 All canvas are pooled by default, it can be manually cleaned by Destroy(canvas.gameobject) with timeoutStrategy set as Null or be auto with a Timeout Strategy (only InactiveTimout is included atm)<br>
 Select a strategy to free up canvas that arent used frequently. The timer will tick (and destroy if finish) before script's Update() and reset time on open before any transition.<br>
@@ -98,116 +280,6 @@ public sealed class CustomTimeout : ITimeout
 }
 ```
 
-# State Machine
-Git package URL: https://github.com/ducvg/DVG.git?path=Assets/DVG/Runtime/State%20Machine<br>
-Full serializable state machine, mark [Serializable] on any state machines or states that want to be serialized<br>
-#### State Update Behaviours
- - Supported updates: EarlyUpdate, FixedUpdate, Update, LateUpdate(PreLateUpdate in internal loop)
- - Implement interface with according updates: IUpdate, IFixedUpdate, ...
- - State updates follows the unity event order: https://docs.unity3d.com/6000.3/Documentation/Manual/execution-order.html
- - **Updates's behaviour will run before monobehaviour scripts update's behaviour (state updates before monobehaviour update)**, shouldnt be a problem tho
-#### Example Usage
-The owner, the one using the state machine(s):
-```csharp
-public sealed class Player : MonoBehaviour
-{
-    [field: SerializeField] public PlayerMovementStateMachine MovementStateMachine  { get; private set; }
-    //public PlayerAttackStateMachine AttackStateMachine  { get; private set; }
-
-    private void Awake()
-    {
-        MovementStateMachine.SetOwner(this); //call once
-    }
-
-    private void Update()
-    {
-        if(Input.GetKeyDown(KeyCode.Q))
-        {
-            MovementStateMachine.ChangeState(MovementStateMachine.IdleState);
-        }
-        if(Input.GetKeyDown(KeyCode.W))
-        {
-            MovementStateMachine.ChangeState(MovementStateMachine.WalkState);
-        }
-    }
-}
-```
-The state machine, must implement StateMachine<Owner> with owner is who using the state machine. This serve 2 purposes: cache the states and serialize the states on inspector.
-```csharp
-[Serializable]
-public sealed class PlayerMovementStateMachine : StateMachine<Player>
-{
-    public readonly PlayerIdleState IdleState = new();
-    [field: SerializeField] public PlayerWalkState WalkState { get; private set; }
-}
-```
-The state, must implement IState<Owner> with owner is who using the state machine.<br>
-To have updates within unity internal loops, implement the corresponding interfaces or none if not needed.
-```csharp
-public sealed class PlayerIdleState : IState<Player>, IEarlyUpdate, IUpdate, ILateUpdate, IFixedUpdate
-{
-    public void OnEnter(Player owner) => Debug.Log($"{GetType().Name} OnEnter");
-    public void OnExit(Player owner) => Debug.Log($"{GetType().Name} OnExit");
-    
-    public void EarlyUpdate() => Debug.Log($"{GetType().Name} EarlyUpdate");
-    public void FixedUpdate() => Debug.Log($"{GetType().Name} FixedUpdate");
-    public void Update() => Debug.Log($"{GetType().Name} Update");
-    public void LateUpdate() => Debug.Log($"{GetType().Name} LateUpdate");
-}
-
-[System.Serializable]
-public sealed class PlayerWalkState : IState<Player>, IUpdate, IFixedUpdate
-{
-    [SerializeField] private ParticleSystem _trailParticle;
-    public void OnEnter(Player owner)
-    {
-        if(_trailParticle != null) _trailParticle.Play();
-        Debug.Log($"{GetType().Name} OnEnter");
-    }
-
-    public void OnExit(Player owner)
-    {
-        if(_trailParticle != null) _trailParticle.Stop();
-        Debug.Log($"{GetType().Name} OnExit");
-    }
-
-    public void FixedUpdate() => Debug.Log($"{GetType().Name} FixedUpdate");
-    public void Update() => Debug.Log($"{GetType().Name} Update");
-}
-```
-
-# Audio
-Git package URL: https://github.com/ducvg/DVG.git?path=Assets/DVG/Runtime/Audio<br>
-Add AudioManager on a gameObject, this is a DontDestroyOnLoad Singleton wrap around audio controllers.<br>Every controller implement IAudioController, add custom controller by create class implement this then assign on AudioManager inspector. 2 controllers prepared: SfxAudio and BackgroundAudio
-To play a audio, call .Play on a controller and pass in an IAudioData. <br>
-
-#### AudioData included: 
-- SingleAudioData: play the audio clip asigned on the inspector.
-- RandomAudioData: play a random audio clip in the clip array on the inspector.
-- 
-#### Usage
-Get a controller and play the audio:
-```csharp
-[SerializeField] private SingleAudioData backgroundAudio; 
-[SerializeField] private RandomAudioData shootSfx; 
-...
-AudioManager.Get<SfxController>.Play(shootSfx);
-AudioManager.Get<BackgroundController>.Play(backgroundAudio);
-```
-Create a AudioData:
-```csharp
-[System.Serializable]
-public sealed class CustomData : IAudioData
-{...}
-```
-Create a AudioController:
-```csharp
-[System.Serializable]
-public sealed class VoiceAudio : IAudioController
-{...}
-```
-then assign the new voice audio controller on the audioManager inspector normally like others.
-
 # Pool
 Git package URL: https://github.com/ducvg/DVG.git?path=Assets/DVG/Runtime/Pool<br>
 Object pooling is used to avoid the overhead of creating/destroying object instances and C# Garbage Collector kicking in. Unity already provide a `ObjectPool<T>` for use. However i make my own for the sole purpose of avoid using delegate as it can allocate more and can have unwanted hidden reference. If want to run something right after getting object or return the instance then just call it's method from the factory or something.<br>
@@ -228,49 +300,4 @@ Custom pool:
 ```csharp
 public sealed class CustomPool<T> : IObjectPool<T>
 {...}
-```
-
-# Timer
-A modified version from GitAmend, i cleanup some parts, change some name and slight methods behaviour more suitable for me.<br>
-**Timers will tick before Monobehaviour's Update().**<br>
-Included default timers:
-- CountdownTimer: count down from the set duration every tick (-Time.deltaTime)
-
-#### Usage
-```csharp
-CountdownTimer timer = new(5); //5 secs
-timer.OnTimerStart += () => Debug.Log("Start now")
-timer.OnTimerStop += () => Debug.Log("Timer stopped/finished")
-float elapsedTime = timer.CurrentTime;
-bool isTimerRunning = timer.IsRunning;
-
-float newDuration = 10;
-timer.SetDuration(newDuration); //count again from 10, doesnt pause
-timer.Start();
-timer.Stop();
-timer.Reset(); //back to 10
-timer.Pause();
-tiemr.Resume();
-```
-Create custom timer:
-```csharp
-public sealed class UpdateTimer : ITimer
-{
-    public event Action OnUpdate;
-    ...
-    public override void Tick()
-    {
-        if(!IsRunning) return;
-        if(IsFinished())
-        {
-            Stop();
-            return;
-        }
-        CurrentTime += Time.deltaTime;
-        OnUpdate?.Invoke();
-    }
-
-    [MethodImpl]
-    public override bool IsFinished() => CurrentTime >= _duration;
-}
 ```
