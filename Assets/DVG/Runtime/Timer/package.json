@@ -2,8 +2,15 @@
   "name": "com.dvg.timer",
   "version": "1.0.0",
   "displayName": "DVG.Timer",
-  "description": "unity timer as c# class.",
-  "author": {
+  "description": "unity timer.",
+  "dependencies": 
+  {
+	"com.unity.burst": "1.8.29",
+	"com.unity.collections": "2.6.5",
+	"com.unity.mathematics": "1.3.3"  
+  }, 
+  "author": 
+  {
     "name": "ducvg"
   }
 }
