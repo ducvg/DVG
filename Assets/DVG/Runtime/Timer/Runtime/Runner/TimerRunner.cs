@@ -51,16 +51,25 @@ namespace DVG.Timers
 							timerManagedData.OnTick(timerDataPtr->ElapsedTime);
 							break;
 						case TimerStatus.Finished:
-							if(timerDataPtr->IsPreserved) timerDataPtr->Status = TimerStatus.Preserved;
 							timerManagedData.OnComplete();
 							break;
 						case TimerStatus.Stopped:
-							if(timerDataPtr->IsPreserved) timerDataPtr->Status = TimerStatus.Preserved;
 							timerManagedData.OnStop();
 							break;
 						case TimerStatus.NewLoop:
-							timerManagedData.OnLoopComplete(timerDataPtr->CompletedLoops, timerDataPtr->ElapsedTime, timerDataPtr->CycleElapsedTime);
+							timerManagedData.OnLoopComplete(timerDataPtr->CompletedLoops, timerDataPtr->ElapsedTime, timerDataPtr->LoopElapsedTime);
 							timerDataPtr->Status = TimerStatus.Running;
+							break;
+						case TimerStatus.Preserved:
+							switch(timerDataPtr->PrevStatus)
+							{
+								case TimerStatus.Finished:
+									timerManagedData.OnComplete();
+									break;
+								case TimerStatus.Stopped:
+									timerManagedData.OnStop();
+									break;
+							}
 							break;
 					}
 				}
@@ -68,6 +77,11 @@ namespace DVG.Timers
 			
 			DataStorage.RemoveAll(stopTimerIndexs);
         }
+
+		internal void Dispose()
+		{
+			DataStorage.Clear();
+		}
 
         private unsafe struct UpdateTimerJob : IJobParallelFor
         {
@@ -78,74 +92,82 @@ namespace DVG.Timers
             public void Execute([AssumeRange(0, int.MaxValue)] int dataIndex)
             {
 				var timerDataPtr = DataArrayPtr + dataIndex;
-				if(Hint.Unlikely(timerDataPtr->Status == TimerStatus.Disposed))
+				if(timerDataPtr->Status == TimerStatus.Disposed)
 				{
 					RemoveTimerIndexs.AddNoResize(dataIndex);
 					return;
 				}
-				if(timerDataPtr->Status is TimerStatus.Paused or TimerStatus.Created or TimerStatus.Preserved) return;
-				if(Hint.Unlikely(timerDataPtr->Status == TimerStatus.Stopped))
-				{
-					StopTimer(timerDataPtr, dataIndex);
-					return;
-				}
+				if(timerDataPtr->Status is TimerStatus.Created or TimerStatus.Paused 
+				or TimerStatus.Preserved or TimerStatus.Stopped) return;
 
 				float deltaTime = timerDataPtr->Timing == TimerTiming.ScaleTime ? ScaledDeltaTime : UnscaledDeltaTime;
 				float timerDuration = timerDataPtr->Duration;
 				float tickRateSeconds = timerDataPtr->TickRateSeconds;
-				float newElapsedTime = timerDataPtr->ElapsedTime + deltaTime;
+				bool isPreserverd = timerDataPtr->IsPreserved;
 
-				if(tickRateSeconds > deltaTime)
+				if(Hint.Unlikely(timerDuration <= 0))
 				{
-					float invTickRate = 1f / tickRateSeconds;
-					float prevElapsed = timerDataPtr->ElapsedTime;
-
-					uint prevTickCount = (uint)(prevElapsed * invTickRate);
-					uint newTickCount = (uint)(newElapsedTime * invTickRate);
-
-					if(Hint.Likely(newTickCount == prevTickCount))
+					timerDataPtr->ElapsedTime = timerDuration * (timerDataPtr->Loops+1);
+					if(isPreserverd)
 					{
-						timerDataPtr->Status = TimerStatus.AccumulateTick;
+						timerDataPtr->PrevStatus = TimerStatus.Finished;
+						timerDataPtr->Status = TimerStatus.Preserved;
+					} 
+					else
+					{
+						timerDataPtr->Status = TimerStatus.Finished;
+						RemoveTimerIndexs.AddNoResize(dataIndex);
+					}
+					return;
+				}
+
+				if(tickRateSeconds > math.EPSILON)
+				{
+					timerDataPtr->TickProgress += deltaTime;
+
+					if(Hint.Likely(timerDataPtr->TickProgress < tickRateSeconds))
+					{
+						timerDataPtr->Status = TimerStatus.ProgressTick;
 						return;
 					}
 					else
 					{
+						timerDataPtr->TickProgress = timerDataPtr->TickProgress % tickRateSeconds;
 						timerDataPtr->Status = TimerStatus.Running;
 					}
 				}
-
-				timerDataPtr->ElapsedTime = newElapsedTime;
-				timerDataPtr->CycleElapsedTime += deltaTime;
-				            
-				float loopCount = timerDataPtr->Loops;
-				if(Hint.Unlikely(timerDataPtr->CycleElapsedTime >= timerDuration))
+				else
 				{
-					var completedLoops = timerDataPtr->CompletedLoops + 1;
-					if(loopCount <= 0 || Hint.Unlikely(completedLoops > loopCount))
+					tickRateSeconds = deltaTime;
+				}
+
+				int prevLoop = (int)(timerDataPtr->ElapsedTime / timerDuration + math.EPSILON);
+				timerDataPtr->ElapsedTime += tickRateSeconds;
+				int curLoop = (int)(timerDataPtr->ElapsedTime / timerDuration  + math.EPSILON);
+				float newElapsedTime = timerDataPtr->ElapsedTime;
+				            
+				if(Hint.Unlikely(prevLoop < curLoop)) //complete duration
+				{
+					float loopCount = timerDataPtr->Loops;
+					if(Hint.Unlikely(timerDataPtr->CompletedLoops > loopCount))
 					{
-						if(newElapsedTime >= timerDuration) timerDataPtr->ElapsedTime = timerDuration;
-						StopTimer(timerDataPtr, dataIndex);
+						timerDataPtr->ElapsedTime = timerDuration * (loopCount+1);
+						if(isPreserverd)
+						{
+							timerDataPtr->PrevStatus = TimerStatus.Finished;
+							timerDataPtr->Status = TimerStatus.Preserved;
+						} 
+						else
+						{
+							timerDataPtr->Status = TimerStatus.Finished;
+							RemoveTimerIndexs.AddNoResize(dataIndex);
+						}
 						return;
 					}
 
-					timerDataPtr->CompletedLoops++;
-					timerDataPtr->CycleElapsedTime = 0;
 					timerDataPtr->Status = TimerStatus.NewLoop;
 				}
 			}
-
-			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			private void StopTimer(TimerData* timerDataPtr, int dataIndex)
-			{
-				timerDataPtr->Status = TimerStatus.Stopped;
-				if(timerDataPtr->IsPreserved) return;
-				RemoveTimerIndexs.AddNoResize(dataIndex);
-			}
         }
-
-		internal void Dispose()
-		{
-			DataStorage.Clear();
-		}
     }
 }
