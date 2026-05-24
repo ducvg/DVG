@@ -231,46 +231,73 @@ public sealed class CustomPool<T> : IObjectPool<T>
 ```
 
 # Timer
-A modified version from GitAmend, i cleanup some parts, change some name and slight methods behaviour more suitable for me.<br>
-**Timers will tick before Monobehaviour's Update().**<br>
-Included default timers:
-- CountdownTimer: count down from the set duration every tick (-Time.deltaTime)
-
-#### Usage
+https://github.com/ducvg/DVG.git?path=Assets/DVG/Runtime/Timer
+#### Features
+ - No allocation with struct based design.
+ - Utilizing unity DOTS for performance.
+ - Hooked onto unity internal loops allows precise game timing.
+ - **Ticks will run before monobehaviour scripts update's (timer updates before monobehaviour update)**, shouldnt be a problem tho
+### Example
 ```csharp
-CountdownTimer timer = new(5); //5 secs
-timer.OnTimerStart += () => Debug.Log("Start now")
-timer.OnTimerStop += () => Debug.Log("Timer stopped/finished")
-float elapsedTime = timer.CurrentTime;
-bool isTimerRunning = timer.IsRunning;
-
-float newDuration = 10;
-timer.SetDuration(newDuration); //count again from 10, doesnt pause
-timer.Start();
-timer.Stop();
-timer.Reset(); //back to 10
-timer.Pause();
-tiemr.Resume();
-```
-Create custom timer:
-```csharp
-public sealed class UpdateTimer : ITimer
+public class Character: MonoBehaviour
 {
-    public event Action OnUpdate;
-    ...
-    public override void Tick()
-    {
-        if(!IsRunning) return;
-        if(IsFinished())
-        {
-            Stop();
-            return;
-        }
-        CurrentTime += Time.deltaTime;
-        OnUpdate?.Invoke();
-    }
+	private float hp = 100;
+	Timer skillCooldownTimer;
 
-    [MethodImpl]
-    public override bool IsFinished() => CurrentTime >= _duration;
+	void Start()
+	{
+		skillCooldownTimer = Timer.Create(10f, preserve: true).BindTo(this);
+	}
+
+	public void UseSkill()
+	{
+		if(skillCooldownTimer.IsRunning) return;
+		skillCooldownTimer.Run();
+	}
+
+	public void TakeDotDamage(float damagePerInstance, float duration, float tickInterval)
+	{
+		Timer.Create(duration, tickInterval).BindTo(this)
+			.OnTick(this, (character, elapsedTime) => character.hp -= damagePerInstance)
+			.Run();
+	}
 }
 ```
+## API
+#### Settings
+- `TimerSetting` hold settings fields
+	- `JobBatchCount`: default 32, used for scheduling update timers job. Increase or decrease accordingly to usage.
+#### Create Timer
+- Start everything with `Timer.Create(duration)` to get a Timer instance.
+- `.Create` overload parameters:
+	- `float duration`: the duration of the timer.
+	- `float tickRateSeconds`: Time interval between OnTick callbacks and ElapsedTime changes.
+	- `int loops`: default 0, timer keep running until completed this amount of loops.
+	- `bool preserved`:defaut false, by default timer will be cleaned after it is Stopped or Finished, set to true will allow reuse.<br> **Will Leak if not use with .BindTo() or .Dispose()**
+	- `TimerTiming timing`: default scaled time. `TimerTiming.ScaledTime` or `.UnscaledTime`
+	- `TimerUpdater updater`: default Update. `TimerUpdater.EarlyUpdate`, `.FixedUpdate`, `.Update`,...
+ - `.BindTo(Monobehaviour)` is optional. It will bind the timer lifetime to a gameobject ensure no leak, destroy the binded gameobject will release the timer.
+#### Use Timer instance
+- Get info:
+  	- `.Duration` return timer duration
+  	- `.ElapsedTime` return timer total elapsed time, include loops.
+  	- `.Loops` return total loops count
+  	- `.CompletedLoops` return completed loops count
+  	- `.LoopElapsedTime` return current loop elapsed time
+  	- `.IsRunning`, `.IsComplete`, `.IsPaused`
+- Actions:
+	- `.Run()`: start the timer when its created or **Continue** the timer if its Paused.
+	- `.Pause()`: pause the timer when it is Running.
+	- `.Stop()`: stop the timer when it is Running or Paused. Retain timer's progress.
+	- `.Complete()`: complete the timer immdiately, including its progress.
+	- `.Reset()`: reset timer progress back to first creation with `.Create()`.
+ 	- `.Reset(float duration)` same as Reset() but with a new duration.
+#### Add Callback
+- Chain after a timer instance
+	- `.OnStart()`: invoked when the timer first started.
+	- `.OnTick(float elapsedTime)`: invoke after every update of the updater or every `tickRateSeconds`
+	- `.OnComplete()`: invoked when elapsed time reach duration, or `.Complete()`
+	- `.OnPause(float elapsedTime)`: invoked when call `.Pause()` on a running timer.
+	- `.OnContinue(float elapsedTime)`: invoked when call `.Run()` on a paused timer.
+	- `.OnStop()`: invoked when `.BindTo()` gameobject is destroyed, or by `.Stop()`
+	- `.OnLoopComplete(int loop, float totalElapsedTime, float cycleElapseTime)`: invoke when a loop complete.
