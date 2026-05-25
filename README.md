@@ -1,7 +1,3 @@
-# About
-Some systems that i aim for the least abstraction and voodoo magic, each system should be understood just by reading methods' name.<br>
-These also aim for minimal uses of monobehaviours/components and no enum switches.
-
 # Install
 https://github.com/ducvg/DVG.git?path=Assets/DVG<br>
 Note: This will auto install all [included packages](#Included) below, individual package on it's section.<br>
