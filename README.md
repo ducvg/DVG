@@ -50,7 +50,7 @@ public class Character: MonoBehaviour
 ```
 ## API
 #### Settings
-- `TimerSetting` hold settings fields
+- `TimerSetting` static class hold configurable settings fields
 	- `JobBatchCount`: default 32, used for scheduling update timers job. Increase or decrease accordingly to usage.
 #### Create Timer
 - Start everything with `Timer.Create(duration)` to get a Timer instance.
