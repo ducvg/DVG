@@ -58,7 +58,7 @@ public class Character: MonoBehaviour
 	- `float duration`: the duration of the timer.
 	- `float tickRateSeconds`: Time interval between OnTick callbacks and ElapsedTime changes.
 	- `int loops`: default 0, timer keep running until completed this amount of loops.
-	- `bool preserved`:defaut false, by default timer will be cleaned after it is Stopped or Finished, set to true will allow reuse.<br> **Will Leak if not use with .BindTo() or .Dispose()**
+	- `bool preserved`:defaut false, by default timer will be freed after it is Stopped or Finished, set to true will allow reuse.<br> **Will Leak if not use with .BindTo() or .Dispose()**
 	- `TimerTiming timing`: default scaled time. `TimerTiming.ScaledTime` or `.UnscaledTime`
 	- `TimerUpdater updater`: default Update. `TimerUpdater.EarlyUpdate`, `.FixedUpdate`, `.Update`,...
  - `.BindTo(Monobehaviour)` Optional. this will bind the timer lifetime to a gameobject ensure no leak, destroy the binded gameobject will release the timer and invoke OnDispose() callback.
