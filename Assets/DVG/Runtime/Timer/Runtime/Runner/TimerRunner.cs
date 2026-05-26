@@ -33,31 +33,31 @@ namespace DVG.Timers
 					ref var timerData = ref *(dataPtr + i);
 					var timerManagedData = managedDataSpan[i];
 
+					switch (timerData.Status)
+					{
+						case TimerStatus.Running:
+							timerManagedData.InvokeOnTick(timerData.ElapsedTime);
+							continue;
+						case TimerStatus.Completed:
+							timerManagedData.InvokeOnTick(timerData.ElapsedTime);
+							timerManagedData.InvokeOnComplete();
+							if(timerData.IsPreserved) timerData.Status = TimerStatus.Preserved;
+							continue;
+						case TimerStatus.NewLoop:
+							timerManagedData.InvokeOnTick(timerData.ElapsedTime);
+							timerManagedData.InvokeOnLoopComplete(timerData.CompletedLoops, timerData.ElapsedTime, timerData.LoopElapsedTime);
+							timerData.Status = TimerStatus.Running;
+							continue;
+					}
+
 					if(timerManagedData.bindOwnerCancellationToken.IsCancellationRequested)
 					{
 						if(timerData.Status == TimerStatus.Disposed) continue;
 
 						timerData.Status = TimerStatus.Disposed;
-						timerManagedData.OnDisposed();
+						timerManagedData.InvokeOnDisposed();
 						removeTimerIndexs.AddNoResize(i);
 						continue;
-					}
-
-					switch (timerData.Status)
-					{
-						case TimerStatus.Running:
-							timerManagedData.OnTick(timerData.ElapsedTime);
-							continue;
-						case TimerStatus.Completed:
-							timerManagedData.OnTick(timerData.ElapsedTime);
-							timerManagedData.OnComplete();
-							if(timerData.IsPreserved) timerData.Status = TimerStatus.Preserved;
-							continue;
-						case TimerStatus.NewLoop:
-							timerManagedData.OnTick(timerData.ElapsedTime);
-							timerManagedData.OnLoopComplete(timerData.CompletedLoops, timerData.ElapsedTime, timerData.LoopElapsedTime);
-							timerData.Status = TimerStatus.Running;
-							continue;
 					}
 				}
 			}

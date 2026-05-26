@@ -7,11 +7,6 @@ namespace DVG.Timers
 {
 	internal struct TimerData
     {
-        public TimerStatus Status;
-        public TimerTiming Timing;
-		
-		public bool IsPreserved;
-
         public int Loops;
 		public int CompletedLoops => Duration > 0f ? (int)(ElapsedTime / Duration + math.EPSILON) : 0;
 
@@ -20,6 +15,11 @@ namespace DVG.Timers
 		public float LoopElapsedTime => Status == TimerStatus.Completed ? Duration : ElapsedTime % Duration;
         public float TickRateSeconds;
 		public float TickProgress;
+
+		public bool IsPreserved; 
+
+		public TimerStatus Status;
+        public TimerTiming Timing;
     }
 
 	internal struct TimerManagedData
@@ -34,7 +34,7 @@ namespace DVG.Timers
 		internal object DisposeActionContext, OnDisposeAction;
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		internal void OnStart()
+		internal void InvokeOnStart()
 		{
 			if(OnStartAction == null) return;
 
@@ -48,7 +48,7 @@ namespace DVG.Timers
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		internal void OnTick(float totalElapsedTime)
+		internal void InvokeOnTick(float totalElapsedTime)
 		{
 			if(OnTickAction == null) return;
 
@@ -62,7 +62,7 @@ namespace DVG.Timers
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		internal void OnLoopComplete(int completedLoops, float totalElapsedTime, float cycleElapsedTime)
+		internal void InvokeOnLoopComplete(int completedLoops, float totalElapsedTime, float cycleElapsedTime)
 		{
 			if(OnLoopCompleteAction == null) return;
 
@@ -76,7 +76,7 @@ namespace DVG.Timers
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		internal void OnPause(float totalElapsedTime)
+		internal void InvokeOnPause(float totalElapsedTime)
 		{
 			if(OnPauseAction == null) return;
 
@@ -90,7 +90,7 @@ namespace DVG.Timers
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		internal void OnContinue(float totalElapsedTime)
+		internal void InvokeOnContinue(float totalElapsedTime)
 		{
 			if(OnContinueAction == null) return;
 
@@ -104,7 +104,7 @@ namespace DVG.Timers
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		internal void OnDisposed()
+		internal void InvokeOnDisposed()
 		{
 			if(OnDisposeAction == null) return;
 
@@ -118,7 +118,7 @@ namespace DVG.Timers
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		internal void OnComplete()
+		internal void InvokeOnComplete()
 		{
 			if(OnCompleteAction == null) return;
 

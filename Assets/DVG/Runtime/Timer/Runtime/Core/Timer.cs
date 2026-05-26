@@ -72,11 +72,11 @@ namespace DVG.Timers
 			{
 				case TimerStatus.Created:
 					data.Status = TimerStatus.Running;
-					managedData.OnStart();
+					managedData.InvokeOnStart();
 					return;
 				case TimerStatus.Paused:
 					data.Status = TimerStatus.Running;
-					managedData.OnContinue(data.ElapsedTime);
+					managedData.InvokeOnContinue(data.ElapsedTime);
 					return;
 			}
 		}
@@ -90,7 +90,7 @@ namespace DVG.Timers
 			if(data.Status is TimerStatus.Running or TimerStatus.Created or TimerStatus.NewLoop)
 			{
 				data.Status = TimerStatus.Paused;
-				managedData.OnPause(data.ElapsedTime);
+				managedData.InvokeOnPause(data.ElapsedTime);
 			}
 		}
 
@@ -103,7 +103,7 @@ namespace DVG.Timers
 			{
 				data.ElapsedTime = data.Duration * (data.Loops + 1);
 				data.TickProgress = data.TickRateSeconds;
-				managedData.OnComplete();
+				managedData.InvokeOnComplete();
 
 				data.Status = data.IsPreserved ? TimerStatus.Preserved : TimerStatus.Completed;
 			}
@@ -140,15 +140,16 @@ namespace DVG.Timers
 		public void Dispose()
 		{
 			ref TimerData data = ref DataStorage.GetDataRef(this);
+			if(data.Status == TimerStatus.Disposed) return;
 			ref TimerManagedData managedData = ref DataStorage.GetManagedDataRef(this);
 			
 			data.Status = TimerStatus.Disposed;
-			managedData.OnDisposed();
+			managedData.InvokeOnDisposed();
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static Timer Create(
-			float duration, float tickRateSeconds = -1f, 
+		public static Timer Create(float duration, 
+			float tickRateSeconds = -1f, 
 			int loops = 0, bool preserve = false,
 			TimerTiming timing = TimerTiming.ScaleTime,
 			TimerRunner updater = null
