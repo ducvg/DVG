@@ -174,7 +174,7 @@ public sealed class PlayerWalkState : IState<Player>, IUpdate, IFixedUpdate
 ```
 
 # Audio
-Git package URL: https://github.com/ducvg/DVG.git?path=Assets/DVG/Runtime/Audio<br>
+https://github.com/ducvg/DVG.git?path=Assets/DVG/Runtime/Audio<br>
 Add AudioManager on a gameObject, this is a DontDestroyOnLoad Singleton wrap around audio controllers.<br>Every controller implement IAudioController, add custom controller by create class implement this then assign on AudioManager inspector. 2 controllers prepared: SfxAudio and BackgroundAudio
 To play a audio, call .Play on a controller and pass in an IAudioData. <br>
 
@@ -206,7 +206,7 @@ public sealed class VoiceAudio : IAudioController
 then assign the new voice audio controller on the audioManager inspector normally like others.
 
 # UI
-Git package URL: https://github.com/ducvg/DVG.git?path=Assets/DVG/Runtime/UI<br>
+https://github.com/ducvg/DVG.git?path=Assets/DVG/Runtime/UI<br>
 ##### Dependency (auto installed)
 - Litmotion
 - UniTask
@@ -292,8 +292,8 @@ public sealed class CustomTimeout : ITimeout
 ```
 
 # Pool
-Git package URL: https://github.com/ducvg/DVG.git?path=Assets/DVG/Runtime/Pool<br>
-Object pooling is used to avoid the overhead of creating/destroying object instances and C# Garbage Collector kicking in. Unity already provide a `ObjectPool<T>` for use. However i make my own for the sole purpose of avoid using delegate as it can allocate more and can have unwanted hidden reference. If want to run something right after getting object or return the instance then just call it's method from the factory or something.<br>
+https://github.com/ducvg/DVG.git?path=Assets/DVG/Runtime/Pool<br>
+Object pooling is used to avoid the overhead of creating/destroying object instances and Garbage Collector kicking in. Unity already provide a `ObjectPool<T>` for use. However i make my own for the sole purpose of avoid using delegate as it can allocate more and can have unwanted hidden reference. If want to run something right after getting object or return the instance then just call it's method from the factory or something.<br>
 This version use Stack as the main holders for minimal ram usage (out of all collection: inner array and a tail index).<br>
 3 default pools are provided:
 - `ComponentPool<T> where T : UnityEngine.Componenet`: auto .SetActive(true) on rent from pool and (false) when return;
