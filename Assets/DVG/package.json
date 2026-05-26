@@ -4,11 +4,8 @@
   "displayName": "DVG",
   "description": "the things within the things.",
   "dependencies": {
-    "com.dvg.timer": "https://github.com/ducvg/DVG.git?path=Assets/DVG/Runtime/Timer",
-    "com.dvg.statemachine": "https://github.com/ducvg/DVG.git?path=Assets/DVG/Runtime/State%20Machine"
-    "com.dvg.audio": "https://github.com/ducvg/DVG.git?path=Assets/DVG/Runtime/Audio"
-    "com.dvg.ui": "https://github.com/ducvg/DVG.git?path=Assets/DVG/Runtime/UI"
-    "com.dvg.pool": "https://github.com/ducvg/DVG.git?path=Assets/DVG/Runtime/Pool"
+    "com.cysharp.unitask": "https://github.com/Cysharp/UniTask.git?path=src/UniTask/Assets/Plugins/UniTask",
+    "com.annulusgames.lit-motion": "https://github.com/annulusgames/LitMotion.git?path=src/LitMotion/Assets/LitMotion"
   },
   "author": {
     "name": "ducvg"
