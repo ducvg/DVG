@@ -104,7 +104,8 @@ namespace DVG.Timers
 				data.ElapsedTime = data.Duration * (data.Loops + 1);
 				data.TickProgress = data.TickRateSeconds;
 				managedData.OnComplete();
-				data.Status = TimerStatus.Disposed;
+
+				data.Status = data.IsPreserved ? TimerStatus.Preserved : TimerStatus.Completed;
 			}
 		}
 
