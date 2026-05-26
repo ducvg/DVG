@@ -8,7 +8,7 @@ using UnityEngine.PlayerLoop;
 
 namespace DVG.Timers
 {
-    internal static class RunnerManager
+    internal static class RunnerBootstrapper
     {
 		private static void SetupRunners()
 		{

@@ -7,7 +7,6 @@ namespace DVG.Timers
 {
 	internal struct TimerData
     {
-		public TimerStatus PrevStatus;
         public TimerStatus Status;
         public TimerTiming Timing;
 		

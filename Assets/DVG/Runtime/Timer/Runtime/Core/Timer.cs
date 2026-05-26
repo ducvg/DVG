@@ -140,7 +140,10 @@ namespace DVG.Timers
 		public void Dispose()
 		{
 			ref TimerData data = ref DataStorage.GetDataRef(this);
+			ref TimerManagedData managedData = ref DataStorage.GetManagedDataRef(this);
+			
 			data.Status = TimerStatus.Disposed;
+			managedData.OnDisposed();
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -155,7 +158,6 @@ namespace DVG.Timers
 			TimerData data = new TimerData()
 			{
 				Status = TimerStatus.Created,
-				PrevStatus = TimerStatus.Created,
 				Duration = duration,
 				TickRateSeconds = tickRateSeconds,
 				Timing = timing,

@@ -2,8 +2,7 @@ namespace DVG.Timers
 {
 	internal enum TimerStatus : byte
 	{
-		Created, //wait for run()
-		Preserved,
+		Created,
 
 		Running,
 		Paused,
@@ -11,6 +10,7 @@ namespace DVG.Timers
 
 		NewLoop,
 		
+		Preserved,
 		Disposed
 	}
 }
