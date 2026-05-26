@@ -49,7 +49,7 @@ namespace DVG.Timers
 							timerManagedData.OnTick(timerData.ElapsedTime);
 							continue;
 						case TimerStatus.Completed:
-							if(timerData.PrevStatus != TimerStatus.Completed) timerManagedData.OnComplete();
+							timerManagedData.OnComplete();
 							continue;
 						case TimerStatus.NewLoop:
 							timerManagedData.OnTick(timerData.ElapsedTime);
@@ -95,12 +95,6 @@ namespace DVG.Timers
 				if(Hint.Unlikely(timerData.Status == TimerStatus.Disposed))
 				{
 					RemoveTimerIndexs.AddNoResize(dataIndex);
-					return;
-				}
-				if(Hint.Unlikely(timerData.Status == TimerStatus.Completed))
-				{
-					timerData.PrevStatus = TimerStatus.Completed;
-					HandleCompleteTimer(ref timerData, dataIndex);
 					return;
 				}
 				if(timerData.Status is TimerStatus.Created or TimerStatus.Paused or TimerStatus.Preserved) return;

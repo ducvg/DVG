@@ -101,10 +101,10 @@ namespace DVG.Timers
 
 			if(data.Status is TimerStatus.Created or TimerStatus.Running or TimerStatus.Paused or TimerStatus.NewLoop)
 			{
-				data.ElapsedTime = Duration * (Loops + 1);
+				data.ElapsedTime = data.Duration * (data.Loops + 1);
 				data.TickProgress = data.TickRateSeconds;
-				data.Status = TimerStatus.Completed;
 				managedData.OnComplete();
+				data.Status = TimerStatus.Disposed;
 			}
 		}
 
