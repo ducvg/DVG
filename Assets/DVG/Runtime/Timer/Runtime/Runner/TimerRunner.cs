@@ -15,6 +15,7 @@ namespace DVG.Timers
         internal unsafe void Update(float scaledDeltaTime, float unscaledDeltaTime)
         {
 			var count = DataStorage.Count;
+			if(count <= 0) return;
 			using NativeList<int> removeTimerIndexs = new NativeList<int>(count, Allocator.TempJob);
 			fixed (TimerData* dataPtr = DataStorage.GetDataSpan())
 			{
