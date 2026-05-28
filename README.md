@@ -257,9 +257,13 @@ UIManager.CloseAllImmediate();
 GameplayCanvas gameCanvas = UIManager.GetCanvas<GameplayCanvas>(); //will open if canvas hasnt open before
 UIManager.UnloadCanvas<MinigameCanvas>(); //destroy the pooled canvas and release reference to the canvas;
 ```
+### Create a UI Canvas
+Inherit from BaseCanvas
 ```csharp
-//Create a canvas, save this as a prefab and drag on UI Manager, no addressable support atm
-public sealed class
+public sealed class SettingCanvas : BaseCanvas
+{
+	
+}
 ```
 
 ### Pool, Timeout
