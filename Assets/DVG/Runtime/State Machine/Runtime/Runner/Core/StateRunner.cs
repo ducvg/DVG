@@ -4,14 +4,14 @@ using UnityEngine;
 
 namespace DVG.StateMachine
 {
-    internal interface IStateRunner
+    internal abstract class StateRunner
     {
-        public void Run(float deltaTime);
-        public bool Register<TOwner>(State<TOwner> state) where TOwner : MonoBehaviour;
-        // public void Unregister<TOwner>(State<TOwner> state) where TOwner : MonoBehaviour;
+        public abstract void Run(float deltaTime);
+        public abstract void Register<TOwner>(State<TOwner> state) where TOwner : MonoBehaviour;
+        // public abstract void Unregister<TOwner>(State<TOwner> state) where TOwner : MonoBehaviour;
     }
     
-    internal abstract class StateRunner<TUpdate> : IStateRunner
+    internal abstract class StateRunner<TUpdate> : StateRunner
     {
         private const int _initActiveSize = 128;
         private const int _initPendingAddSize = 64;
@@ -20,7 +20,7 @@ namespace DVG.StateMachine
         protected int _tailIndex;
         protected LiteStack<TUpdate> _pendingAddStack = new(_initPendingAddSize);
 
-        public void Run(float deltaTime)
+        public override void Run(float deltaTime)
         {
             int j = _tailIndex - 1;
             
@@ -100,12 +100,11 @@ namespace DVG.StateMachine
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected abstract void TickState(TUpdate state, float deltaTime);
 
-        public bool Register<TOwner>(State<TOwner> state) where TOwner : MonoBehaviour
+        public override void Register<TOwner>(State<TOwner> state)
         {
-            if (state is not TUpdate u) return false;
+            if (state is not TUpdate u) return;
             
             _pendingAddStack.Push(u);
-            return true;
         }
     }
 }

@@ -6,7 +6,7 @@ namespace DVG.StateMachine
 {
     public static class StateManager
     {
-        internal static IStateRunner[] Runners { get; private set; }    
+        internal static StateRunner[] Runners { get; private set; }    
 
 #if UNITY_2020_1_OR_NEWER
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
@@ -18,7 +18,7 @@ namespace DVG.StateMachine
             RunnerBootstrapper.Initialize();
         }
 
-        internal static void SetRunners(params IStateRunner[] runners)
+        internal static void SetRunners(params StateRunner[] runners)
         {
             Runners = runners;
         }
