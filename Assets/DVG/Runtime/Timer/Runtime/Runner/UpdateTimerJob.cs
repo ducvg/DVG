@@ -1,4 +1,5 @@
 using System.Runtime.CompilerServices;
+using Unity.Burst;
 using Unity.Burst.CompilerServices;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
@@ -9,6 +10,7 @@ namespace DVG.Timers
 {
     public sealed partial class TimerRunner
     {
+		[BurstCompile]
 		private unsafe struct UpdateTimerJob : IJobParallelFor
         {
 			[ReadOnly] public float ScaledDeltaTime, UnscaledDeltaTime;
