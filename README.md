@@ -1,5 +1,5 @@
 # Install
-https://github.com/ducvg/DVG.git?path=Assets/DVG<br><br>
+https://github.com/ducvg/DVG.git?path=Assets/DVG<br>
 
 Note: This will auto install all [included packages](#Included) below, individual package on it's section.<br>
 Dependency: UniTask, LitMotion<br>
@@ -298,6 +298,7 @@ public sealed class CustomTimeout : ITimeout
 
 # Pool
 https://github.com/ducvg/DVG.git?path=Assets/DVG/Runtime/Pool<br>
+
 Object pooling is used to avoid the overhead of creating/destroying object instances and Garbage Collector kicking in. Unity already provide a `ObjectPool<T>` for use. However i make my own for the sole purpose of avoid using delegate as it can allocate more and can have unwanted hidden reference. If want to run something right after getting object or return the instance then just call it's method from the factory or something.<br>
 This version use Stack as the main holders for minimal ram usage (out of all collection: inner array and a tail index).<br>
 3 default pools are provided:
