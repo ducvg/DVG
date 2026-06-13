@@ -10,7 +10,7 @@ namespace DVG.Pool
         private readonly Stack<T> _inactiveStack;
         private readonly int _maxSize;
         
-        public UnityPool(T prefab, int defaultCapacity = 10, int maxSize = 100)
+        public UnityPool(T prefab, int defaultCapacity = 8, int maxSize = 512)
         {
             _prefab = prefab;
             _maxSize = maxSize;
