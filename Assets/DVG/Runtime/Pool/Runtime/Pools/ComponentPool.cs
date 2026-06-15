@@ -17,7 +17,7 @@ namespace DVG.Pool
         {
             _prefab = prefab;
             _parent = parent;
-            _maxSize = maxSize;
+            _maxSize = maxSize < 1 ? int.MaxValue : maxSize;
             _inactiveStack = new(defaultCapacity);
         }
 
