@@ -13,7 +13,7 @@ namespace DVG.Pool
         public UnityPool(T prefab, int defaultCapacity = 8, int maxSize = 512)
         {
             _prefab = prefab;
-            _maxSize = maxSize;
+            _maxSize = maxSize < 1 ? int.MaxValue : maxSize;
             _inactiveStack = new(defaultCapacity);
         }
 
