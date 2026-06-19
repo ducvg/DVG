@@ -13,11 +13,11 @@ namespace DVG.Pool
         private readonly int _maxSize;
         private readonly Transform _parent;
 
-        public ComponentPool(T prefab, Transform parent = null, int defaultCapacity = 10, int maxSize = 100)
+        public ComponentPool(T prefab, Transform parent = null, int defaultCapacity = 8, int maxSize = 512)
         {
             _prefab = prefab;
             _parent = parent;
-            _maxSize = maxSize;
+            _maxSize = maxSize < 1 ? int.MaxValue : maxSize;
             _inactiveStack = new(defaultCapacity);
         }
 
