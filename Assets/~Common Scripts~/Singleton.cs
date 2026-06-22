@@ -45,7 +45,7 @@ public abstract class ScriptableSingleton<T> : ScriptableSingleton where T : Scr
 	public static T Instance => _instance;
 	private static T _instance;
 
-	protected void Awake()
+	protected virtual void OnEnable()
 	{
 		Debug.Log("awake");
 		if (_instance != null && _instance != this) return;
